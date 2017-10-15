@@ -71,11 +71,6 @@
 
         float specularLightWeightning = pow(hdotn, 500.0);
 
-        // Sum up all three reflection components and send to the fragment shader
-        // vColor = vec4(((uAmbientLightColor*uAmbientMaterialColor)
-        //             + diffuseColor * diffuseLightWeightning
-        //             + (uSpecularLightColor*uSpecularMaterialColor) * specularLightWeightning),1.0);
-
 
         vColor = vec4(((uAmbientLightColor * diffuseColor)
                     + (uDiffuseLightColor * diffuseColor) * diffuseLightWeightning
@@ -89,7 +84,7 @@
 <script src="webgl-utils.js"></script>
 <script src="simpleModeling.js"></script>
 <script src="terrainModeling.js"></script>
-<script src="zhiyuan5_MP2A.js"></script>
+<script src="terrain-generator.js"></script>
 <body onload="startup();">
  <canvas id="myGLCanvas" width="800" height="800"></canvas>
     <form id="input_form">
