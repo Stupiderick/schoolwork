@@ -71,7 +71,6 @@
 
         float specularLightWeightning = pow(hdotn, 500.0);
 
-
         vColor = vec4(((uAmbientLightColor * diffuseColor)
                     + (uDiffuseLightColor * diffuseColor) * diffuseLightWeightning
                     + (uSpecularLightColor) * specularLightWeightning),1.0);
@@ -96,5 +95,4 @@
         </fieldset>
         </form>
 </body>
-
 </html>
