@@ -1,6 +1,7 @@
 This flight simulator is done thru HTML and Javascript.
 
 Instructions:
+
     Increase speed -> '+'
     Decrease speed -> '-'
 
