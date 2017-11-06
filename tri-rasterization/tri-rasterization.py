@@ -22,11 +22,15 @@ def rasLine(p1x, p1y, p2x, p2y):
     while pointX != p2x and pointY != p2y:
         coordList.append((pointX, pointY))
 
-        yNext = slope(pointX + 1) + yIntercept
+        yNext = float(slope(pointX + 1) + yIntercept)
         if yNext - pointY > 1:
-            for i in range(pointY+1, floor(yNext)):
+            for i in range(pointY+1, int(yNext)):
                 coordList.append((pointX, i))
-            
+            pointY = int(yNext)
+
+        pointX += 1
+        if yNext - pointY > pointY + 1 - yNext:
+            pointY += 1
 
 
 
