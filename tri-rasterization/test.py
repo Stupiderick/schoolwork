@@ -1,3 +1,3 @@
 import rasline
 
-print(rasline.rasLine(1, 2, 7, 10))
+print(rasline.rasLine(-1, 2, 2, 10))

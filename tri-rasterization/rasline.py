@@ -1,4 +1,7 @@
-def rasLine(p1x, p1y, p2x, p2y):
+def rasLine(p1x, p1y, p2x, p2y, plot=True):
+    '''
+    find out the points that are needed to be plotted
+    '''
     if p1x == p2x:
         return
 
@@ -32,8 +35,26 @@ def rasLine(p1x, p1y, p2x, p2y):
         if yNext - pointY > pointY + 1 - yNext:
             pointY += 1
 
+    coordList.append((p2x, p2y))
+
+    if p2y > p1y:
+        plotLine(coordList, p1x, p2x, p1y, p2y)
+    else:
+        plotLine(coordList, p1x, p2x, p2y, p1y)
+
 
     return coordList
+
+
+def plotLine(coordList, minX, maxX, minY, maxY):
+    for i in range(minX, maxX+1):
+        for j in range(maxY+1, minY, -1):
+            if (i, j) in coordList:
+                print('*', end='')
+            else:
+                print(' ', end='')
+        print()
+
 
 
 def switchPoint(a, b, c, d):
