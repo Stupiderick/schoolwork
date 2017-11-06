@@ -2,8 +2,37 @@ def rasLine(p1x, p1y, p2x, p2y, plot=True):
     '''
     find out the points that are needed to be plotted
     '''
+
+    coordList = []
+
     if p1x == p2x:
-        return
+        if p1y > p2y:
+            for i in range(p2y, p1y+1):
+                coordList.append((i, p1x))
+            if plot:
+                plotLine(coordList, p1x-1, p2x+1, p2y, p1y)
+        else:
+            for i in range(p1y, p2y+1):
+                coordList.append((i, p1x))
+            if plot:
+                plotLine(coordList, p1x-1, p2x+1, p1y, p2y)
+
+        return coordList
+
+
+    if p1y == p2y:
+        if p1x > p2x:
+            for i in range(p2x, p1x+1):
+                coordList.append((i, p1y))
+            if plot:
+                plotLine(coordList, p2x, p1x, p1y-1, p2y+1)
+        else:
+            for i in range(p1x, p2x+1):
+                coordList.append((i, p1y))
+            if plot:
+                plotLine(coordList, p1x, p2x, p1y-1, p2y+1)
+
+        return coordList
 
     # If p1x is less than p2x, we switch them to ensure point 1 is on the left
     #  of point 2.
@@ -20,7 +49,6 @@ def rasLine(p1x, p1y, p2x, p2y, plot=True):
 
     pointX = p1x
     pointY = p1y
-    coordList = []
 
     while pointX != p2x and pointY != p2y:
         coordList.append((pointX, pointY))
@@ -60,11 +88,8 @@ def plotLine(coordList, minX, maxX, minY, maxY):
 def switchPoint(a, b, c, d):
     t1 = a
     t2 = b
-
     a = c
     b = d
-
     c = t1
     d = t2
-
     return a, b, c, d
