@@ -65,11 +65,11 @@ def rasLine(p1x, p1y, p2x, p2y, plot=True):
 
     coordList.append((p2x, p2y))
 
-    if p2y > p1y:
-        plotLine(coordList, p1x, p2x, p1y, p2y)
-    else:
-        plotLine(coordList, p1x, p2x, p2y, p1y)
-
+    if plot:
+        if p2y > p1y:
+            plotLine(coordList, p1x, p2x, p1y, p2y)
+        else:
+            plotLine(coordList, p1x, p2x, p2y, p1y)
 
     return coordList
 
