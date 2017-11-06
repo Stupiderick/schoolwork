@@ -1,7 +1,35 @@
 def rasLine(p1x, p1y, p2x, p2y):
+    if p1x = p2x:
+        return
+
+    # If p1x is less than p2x, we switch them to ensure point 1 is on the left
+    #  of point 2.
     if p1x < p2x:
         p1x, p1y, p2x, p2y = switchPoint(p1x, p1y, p2x, p2y)
-    
+
+    slope = float((p2y - p1y) / (p2x - p1x))
+    yIntercept = p1y - slope * p1x
+
+    if slope > 0:
+        tend = 1
+    else:
+        tend = -1
+
+    pointX = p1x
+    pointY = p1y
+    coordList = []
+
+    while pointX != p2x and pointY != p2y:
+        coordList.append((pointX, pointY))
+
+        yNext = slope(pointX + 1) + yIntercept
+        if yNext - pointY > 1:
+            for i in range(pointY+1, floor(yNext)):
+                coordList.append((pointX, i))
+            
+
+
+
 
 
 def switchPoint(a, b, c, d):
