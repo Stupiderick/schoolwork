@@ -67,7 +67,7 @@ def rasLine(p1x, p1y, p2x, p2y, plot=True, pointStyle='*', grid=False):
             yNext = slope * (pointX + 1) + yIntercept
             pointX += 1
 
-            if yNext - pointY < pointY + 1 - yNext:
+            if yNext - pointY < pointY - 1 - yNext:
                 pointY -= 1
     else:
         while pointX != p2x or pointY != p2y:
