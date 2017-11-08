@@ -1,9 +1,29 @@
-def rasLine(p1x, p1y, p2x, p2y, plot=True, pointStyle='*', grid=False):
+def rasLine(point1, point2, plot=True, pointStyle='*', grid=False):
     '''
     find out the points that are needed to be plotted
+
+    Parameters
+    ----------
+    point1: tuple of the coord of point 1
+    point2: tuple of the coord of point 2
+    plot=True: whether plot the diagram
+    pointStyle='*': which char to be used to represent points
+    grid=False: whether set the grid in the graph
+
+    Return
+    ------
+    list of coords of point
     '''
 
+    if plot == False:
+        grid = False
+
     coordList = []
+    p1x = point1[0]
+    p1y = point1[1]
+    p2x = point2[0]
+    p2y = point2[1]
+
 
     # Case: vertical line
     if p1x == p2x:
@@ -91,12 +111,12 @@ def rasLine(p1x, p1y, p2x, p2y, plot=True, pointStyle='*', grid=False):
 
 def plotLine(coordList, minX, maxX, minY, maxY, pointStyle, grid):
     for j in range(maxY, minY-1, -1):
-        print("{0:02d} ".format(j), end='')
         # Case with grid
         if grid:
+            print("{0:02d} ".format(j), end='')
             for i in range(minX, maxX+1):
                 if (i, j) in coordList:
-                    print('|'+ pointStyle, end='')
+                    print('|' + pointStyle, end='')
                 else:
                     print('| ', end='')
             print('|')
@@ -110,6 +130,16 @@ def plotLine(coordList, minX, maxX, minY, maxY, pointStyle, grid):
                 else:
                     print('  ', end='')
         # print a newline.
+        print()
+
+    if grid:
+        print('y  |', end='')
+        for i in range(minX, maxX+1):
+            print(str(int(i / 10)) + '|', end='')
+        print()
+        print(' x |', end='')
+        for i in range(minX, maxX+1):
+            print(str(i % 10) + '|', end='')
         print()
 
 
