@@ -1,3 +1,3 @@
 import rasline
 
-print(rasline.rasLine(0, 23, 10, 21, pointStyle='*', grid=True))
+print(rasline.rasLine(23, 4, 100, 0, pointStyle='*', grid=False))
