@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title> Teapot </title>
+<meta charset="utf-8">
+</head>
+
+<script id="shader-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexNormal;
+attribute vec3 aVertexPosition;
+attribute vec2 aTexCoord;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+
+varying vec3 vTexCoord;
+
+void main(void) {
+    gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
+    vTexCoord=aVertexPosition;
+}
+</script>
+
+<script id="shader-fs" type="x-shader/x-fragment">
+precision mediump float;
+
+// Passed in from the vertex shader.
+varying vec3 vTexCoord;
+
+// The texture.
+uniform samplerCube skyboxing;
+
+void main() {
+    gl_FragColor = textureCube(skyboxing, vTexCoord);
+}
+</script>
+
+<script id="shader-teapot-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexNormal;
+attribute vec3 aVertexPosition;
+attribute vec3 aVertexColor;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+uniform mat3 uNMatrix;
+varying vec3 vNormal;
+varying vec3 vPosition;
+varying vec3 diffuseColor;
+varying vec3 middleLight;
+uniform vec3 uLightPosition;
+
+void main(void) {
+    // Get the vertex position in eye coordinates
+    vec4 vertexPositionEye4 = uMVMatrix * vec4(aVertexPosition, 1.0);
+    vPosition = vertexPositionEye4.xyz / vertexPositionEye4.w;
+    //Calaulate the normal
+    vNormal = normalize(uNMatrix * aVertexNormal);
+
+    vec4 uLightPosition4 = uMVMatrix * vec4(uLightPosition, 1.0);
+    middleLight = uLightPosition4.xyz / uLightPosition4.w;
+
+    gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
+    diffuseColor = aVertexColor;
+}
+</script>
+
+<script id="shader-teapot-fs" type="x-shader/x-fragment">
+precision mediump float;
+varying vec3 vNormal;
+varying vec3 vPosition;
+
+varying vec3 diffuseColor;
+uniform vec3 uAmbientLightColor;
+uniform vec3 uDiffuseLightColor;
+uniform vec3 uSpecularLightColor;
+uniform vec3 uAmbientMaterialColor;
+uniform vec3 uDiffuseMaterialColor;
+uniform vec3 uSpecularMaterialColor;
+
+uniform float uShininess;
+const float shininess = 20.0;
+ varying vec3 middleLight;
+
+uniform vec3 halfway;
+
+void main(void) {
+    vec4 vColor;
+    // Calculate the vector (l) to the light source
+    vec3 vectorToLightSource = normalize(middleLight - vPosition);
+
+    // Calculate n dot l for diffuse lighting
+    float diffuseLightWeightning = max(dot(vNormal, vectorToLightSource), 0.0);
+
+    // Calculate the reflection vector (r) that is needed for specular light
+    vec3 reflectionVector = normalize(reflect(-vectorToLightSource, vNormal));
+
+    // The camera in eye coordinates is located in the origin and is pointing
+    // along the negative z-axis. Calculate viewVector (v)
+    // in eye coordinates as:
+    // (0.0, 0.0, 0.0) - vertexPositionEye3
+    vec3 viewVectorEye = -normalize(vPosition);
+
+    vec3 halfway = normalize(vectorToLightSource + viewVectorEye); // halfway vector
+    float hdotn = max(dot(halfway, vNormal), 0.0);
+
+    float specularLightWeightning = pow(hdotn, shininess);
+
+    vColor = vec4(((uAmbientLightColor * diffuseColor)
+                 + (uDiffuseLightColor * diffuseColor) * diffuseLightWeightning
+                 + (uSpecularLightColor) * specularLightWeightning), 1.0);
+
+    gl_FragColor = vColor;
+}
+</script>
+
+<script src="gl-matrix-min.js"></script>
+<script src="webgl-utils.js"></script>
+<script src="readText.js"></script>
+<script src="teapot.js"></script>
+<body onload="startup();">
+<canvas id="myGLCanvas" width="800" height="800"></canvas>
+<form id="input_form">
+    <fieldset>
+        <b>Instruction:</b><br />
+        Press <mark>left arrow</mark> on keyboard to make left rotation; or
+        press <mark>right arrow</mark> to make right rotation. <br />
+        Press <mark>up arrow</mark> to move upwards; or press
+        <mark>down arrow</mark> to move downwards. <br />
+    </fieldset>
+</form>
+</body>
+</html>
