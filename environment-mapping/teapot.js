@@ -3,6 +3,7 @@ var gl;
 var canvas;
 var texID;
 var useReflection;
+var moveTeapot;
 
 var shaderProgram;
 var shaderTeapotProgram;
@@ -62,6 +63,7 @@ var viewDir = vec3.fromValues(0.0,0.0,-1.0);
 var up = vec3.fromValues(0.0,1.0,0.0);
 var viewPt = vec3.fromValues(0.0,0.0,0.0);
 
+
 /**
  * Sends Modelview matrix to shader
  */
@@ -100,13 +102,21 @@ function uploadNormalMatrixToShader() {
  * @param {Float32Array} d Diffuse light strength
  * @param {Float32Array} s Specular light strength
  */
-function uploadLightsToShader(loc,a,d,s, useReflection) {
+function uploadLightsToShader(loc,a,d,s) {
   gl.useProgram(shaderTeapotProgram);
   gl.uniform3fv(shaderTeapotProgram.uniformLightPositionLoc, loc);
   gl.uniform3fv(shaderTeapotProgram.uniformAmbientLightColorLoc, a);
   gl.uniform3fv(shaderTeapotProgram.uniformDiffuseLightColorLoc, d);
   gl.uniform3fv(shaderTeapotProgram.uniformSpecularLightColorLoc, s);
-  gl.uniform1f(shaderTeapotProgram.uniformUseReflection, useReflection);
+
+}
+
+function reflectionRadio(useReflection) {
+    gl.uniform1f(shaderTeapotProgram.uniformUseReflection, useReflection);
+}
+
+function moveRadio(moveTeapot) {
+    gl.uniform1f(shaderTeapotProgram.uniformMoveTeapot, moveTeapot);
 }
 
 /**
@@ -277,6 +287,7 @@ function setupTeapotShaders() {
     shaderTeapotProgram.uniformAmbientMaterialColor = gl.getUniformLocation(shaderTeapotProgram, "uAmbientMaterialColor");
     shaderTeapotProgram.uniformSpecularMaterialColor = gl.getUniformLocation(shaderTeapotProgram, "uSpecularMaterialColor");
     shaderTeapotProgram.uniformUseReflection = gl.getUniformLocation(shaderTeapotProgram, "useReflection");
+    shaderTeapotProgram.uniformMoveTeapot = gl.getUniformLocation(shaderTeapotProgram, "moveTeapot");
 }
 
 /**
@@ -285,9 +296,15 @@ function setupTeapotShaders() {
 function draw() {
     // get the status of whether the reflection is used.
     if (document.getElementById("useReflection").checked) {
-        useReflection = 1;
+        useReflection = 1.0;
     } else if (document.getElementById("noUseReflection").checked){
-        useReflection = 0;
+        useReflection = 0.0;
+    }
+
+    if (document.getElementById("moveTeapot").checked) {
+        moveTeapot = 1.0;
+    } else if (document.getElementById("moveCam").checked){
+        moveTeapot = 0.0;
     }
 
     var transformVec = vec3.create();
@@ -296,22 +313,35 @@ function draw() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // We'll use perspective
-    mat4.perspective(pMatrix,degToRad(45), gl.viewportWidth / gl.viewportHeight, 0.1, 200.0);
+    mat4.perspective(pMatrix, degToRad(45), gl.viewportWidth / gl.viewportHeight, 0.1, 200.0);
 
     vec3.add(viewPt, eyePt, viewDir);
     // Then generate the lookat matrix and initialize the MV matrix to that view
-    mat4.lookAt(mvMatrix,eyePt,viewPt,up);
+    mat4.lookAt(mvMatrix, eyePt, viewPt, up);
 
     mvPushMatrix();
     vec3.set(transformVec, 0.0, 0.0, 0.0);
     mat4.translate(mvMatrix, mvMatrix, transformVec);
+
+    if (moveTeapot == 1.0) {
+        mvPushMatrix();
+    }
+
     mat4.rotateX(mvMatrix, mvMatrix, modelXRotationRadians);
     mat4.rotateY(mvMatrix, mvMatrix, modelYRotationRadians);
-    setMatrixUniforms();
 
+    setMatrixUniforms();
     gl.useProgram(shaderTeapotProgram);
-    uploadLightsToShader([40.0,40.0,40.0],[0.2,0.2,0.2],[1.0,1.0,1.0],[1.0,1.0,1.0], useReflection);
+    reflectionRadio(useReflection);
+    moveRadio(moveTeapot);
+
     drawTeapot();
+
+    if (moveTeapot == 1.0) {
+        mvPopMatrix();
+    }
+
+    uploadLightsToShader([40.0,40.0,40.0], [0.2,0.2,0.2], [1.0,1.0,1.0], [1.0,1.0,1.0]);
     gl.useProgram(shaderProgram);
     drawCube();
     mvPopMatrix();
@@ -341,7 +371,7 @@ function drawTeapot() {
     gl.bindBuffer(gl.ARRAY_BUFFER, tVertexPositionBuffer);
     gl.vertexAttribPointer(shaderTeapotProgram.vertexPositionAttribute,
                       tVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    //
+    // Bind color buffer.
     gl.bindBuffer(gl.ARRAY_BUFFER, tVertexColorBuffer);
     gl.vertexAttribPointer(shaderTeapotProgram.vertexColorAttribute,
                         tVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -349,8 +379,7 @@ function drawTeapot() {
     // Bind normal buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, tVertexNormalBuffer);
     gl.vertexAttribPointer(shaderTeapotProgram.vertexNormalAttribute,
-                           tVertexNormalBuffer.itemSize,
-                           gl.FLOAT, false, 0, 0);
+                        tVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
     //Draw
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tIndexTriBuffer);
@@ -361,18 +390,6 @@ function drawTeapot() {
  * Animation to be called from tick. Updates global rotation values.
  */
 function animate() {
-    if (then==0) {
-        then = Date.now();
-    } else {
-        now=Date.now();
-        // Convert to seconds
-        now *= 0.0005;
-        // Subtract the previous time from the current time
-        var deltaTime = now - then;
-        // Remember the current time for the next frame.
-        then = now;
-    }
-
     var speed = 0.02;
 
     window.addEventListener("keydown", function (event) {
@@ -433,10 +450,8 @@ function setupTextures() {
                     gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
                     gl.TEXTURE_CUBE_MAP_POSITIVE_Z, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                 ];
-                for (var j = 0; j < 6; j++) {
 
-                    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                for (var j = 0; j < 6; j++) {
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                     gl.texImage2D(targets[j], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img[j]);
@@ -526,6 +541,7 @@ function parseObj(streamOfFile) {
     gl.useProgram(shaderTeapotProgram);
     setupTeapotShaders();
     setupTeapotBuffers();
+
     gl.useProgram(shaderProgram);
     setupCubeShaders();
     setupCubeBuffers();
