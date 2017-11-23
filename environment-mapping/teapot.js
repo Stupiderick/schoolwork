@@ -47,8 +47,10 @@ var cubeTexture;
 
 // For animation
 var then = 0;
-var modelXRotationRadians = degToRad(30);
-var modelYRotationRadians = degToRad(-30);
+var modelXRotationRadians = degToRad(0);
+var modelYRotationRadians = degToRad(0);
+var teapotXRotationRadians = degToRad(0);
+var teapotYRotationRadians = degToRad(0);
 
 // My arrays:
 var vertexArray = [];
@@ -58,10 +60,11 @@ var meshNormalArray = [];
 var colorArray = [];
 
 // State the points
-var eyePt = vec3.fromValues(0.0,2.0,15.0);
-var viewDir = vec3.fromValues(0.0,0.0,-1.0);
-var up = vec3.fromValues(0.0,1.0,0.0);
-var viewPt = vec3.fromValues(0.0,0.0,0.0);
+var eyePt = vec3.fromValues(0.0, 2.0, 15.0);
+var viewDir = vec3.fromValues(0.0, 0.0, -1.0);
+var up = vec3.fromValues(0.0, 1.0, 0.0);
+var viewPt = vec3.fromValues(0.0, 0.0, 0.0);
+var lightDir;
 
 
 /**
@@ -319,29 +322,32 @@ function draw() {
     // Then generate the lookat matrix and initialize the MV matrix to that view
     mat4.lookAt(mvMatrix, eyePt, viewPt, up);
 
+
     mvPushMatrix();
     vec3.set(transformVec, 0.0, 0.0, 0.0);
     mat4.translate(mvMatrix, mvMatrix, transformVec);
 
-    if (moveTeapot == 1.0) {
-        mvPushMatrix();
-    }
-
-    mat4.rotateX(mvMatrix, mvMatrix, modelXRotationRadians);
-    mat4.rotateY(mvMatrix, mvMatrix, modelYRotationRadians);
-
+    mvPushMatrix();
+    mat4.rotateY(mvMatrix, mvMatrix, teapotYRotationRadians);
     setMatrixUniforms();
     gl.useProgram(shaderTeapotProgram);
     reflectionRadio(useReflection);
     moveRadio(moveTeapot);
 
     drawTeapot();
+    mvPopMatrix();
 
-    if (moveTeapot == 1.0) {
-        mvPopMatrix();
-    }
+    mat4.lookAt(mvMatrix, eyePt, viewPt, up);
+    mat4.rotateY(mvMatrix, mvMatrix, modelYRotationRadians);
+    lightDir = vec3.fromValues(10.0, 10.0, 10.0);
+    vec3.rotateY(lightDir, lightDir, viewPt, modelYRotationRadians);
+    //lightDir = moveLight(lightDir);
 
-    uploadLightsToShader([40.0,40.0,40.0], [0.2,0.2,0.2], [1.0,1.0,1.0], [1.0,1.0,1.0]);
+    // var lightMat = mat4.fromValues(lightDir[0],0,0,0,0,lightDir[1],0,0,0,0,lightDir[2],0,0,0,0,1);
+    // mat4.rotateY(lightMat, lightMat, modelYRotationRadians);
+    // lightDir = vec3.fromValues(lightMat[0], lightMat[5], lightMat[10]);
+
+    uploadLightsToShader(lightDir, [0.2,0.2,0.2], [1.0,1.0,1.0], [1.0,1.0,1.0]);
     gl.useProgram(shaderProgram);
     drawCube();
     mvPopMatrix();
@@ -397,29 +403,62 @@ function animate() {
             return; // Do nothing if the event was already processed
         }
 
-        switch (event.key) {
-            // left rotation.
-            case "ArrowLeft":
-            modelYRotationRadians += speed;
-            break;
 
-            // right rotation
-            case "ArrowRight":
-            modelYRotationRadians -= speed;
-            break;
 
-            // up rotation
-            case "ArrowUp":
-            modelXRotationRadians += speed;
-            break;
+        if (moveTeapot == 1.0) {
+            switch (event.key) {
+                // left rotation.
+                case "ArrowLeft":
+                teapotYRotationRadians += speed;
+                break;
 
-            // down rotation
-            case 'ArrowDown':
-            modelXRotationRadians -= speed;
-            break;
+                // right rotation
+                case "ArrowRight":
+                teapotYRotationRadians -= speed;
+                break;
 
-            default:
-            return; // Quit when this doesn't handle the key event.
+                // up rotation
+                case "ArrowUp":
+                teapotXRotationRadians += speed;
+                break;
+
+                // down rotation
+                case 'ArrowDown':
+                teapotXRotationRadians -= speed;
+                break;
+
+                default:
+                return; // Quit when this doesn't handle the key event.
+            }
+        } else {
+            switch (event.key) {
+                // left rotation.
+                case "ArrowLeft":
+                modelYRotationRadians += speed;
+                teapotYRotationRadians += speed;
+                break;
+
+                // right rotation
+                case "ArrowRight":
+                modelYRotationRadians -= speed;
+                teapotYRotationRadians -= speed;
+                break;
+
+                // up rotation
+                case "ArrowUp":
+                modelXRotationRadians += speed;
+                teapotXRotationRadians += speed;
+                break;
+
+                // down rotation
+                case 'ArrowDown':
+                modelXRotationRadians -= speed;
+                teapotXRotationRadians -= speed;
+                break;
+
+                default:
+                return; // Quit when this doesn't handle the key event.
+            }
         }
 
         // Cancel the default action to avoid it being handled twice
