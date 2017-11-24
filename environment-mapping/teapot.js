@@ -47,10 +47,9 @@ var cubeTexture;
 
 // For animation
 var then = 0;
-var modelXRotationRadians = degToRad(0);
 var modelYRotationRadians = degToRad(0);
-var teapotXRotationRadians = degToRad(0);
 var teapotYRotationRadians = degToRad(0);
+var lightYRotationRadians = degToRad(0);
 
 // My arrays:
 var vertexArray = [];
@@ -60,12 +59,15 @@ var meshNormalArray = [];
 var colorArray = [];
 
 // State the points
-var eyePt = vec3.fromValues(0.0, 2.0, 15.0);
-var viewDir = vec3.fromValues(0.0, 0.0, -1.0);
+var eyePt = vec3.fromValues(0.0, 5.0, 14.0);
+var viewDir = vec3.fromValues(0.0, -0.3, -1.0);
 var up = vec3.fromValues(0.0, 1.0, 0.0);
 var viewPt = vec3.fromValues(0.0, 0.0, 0.0);
-var lightDir;
+var lightDir = vec3.fromValues(10.0, 10.0, 10.0);
+var lightDirTemp = vec3.create();
 
+
+var counting = 0;
 
 /**
  * Sends Modelview matrix to shader
@@ -157,6 +159,15 @@ function setMatrixUniforms() {
  */
 function degToRad(degrees) {
     return degrees * Math.PI / 180;
+}
+
+/**
+ * Translates radians to degrees
+ * @param {Number} radian Radian input to function
+ * @return {Number} The degrees that correspond to the radians input
+ */
+function radToDeg(radians) {
+    return 180 * radians / Math.PI;
 }
 
 /**
@@ -327,6 +338,21 @@ function draw() {
     vec3.set(transformVec, 0.0, 0.0, 0.0);
     mat4.translate(mvMatrix, mvMatrix, transformVec);
 
+
+
+    if (moveTeapot == 1.0) {
+        lightDirTemp = vec3.fromValues(10.0,10.0,10.0);
+        //console.log(lightDirTemp)
+        vec3.rotateY(lightDirTemp, lightDirTemp, [0.0,10.0,0.0], lightYRotationRadians);
+    }
+    else if (moveTeapot == 0.0) {
+        //console.log("y")
+        if (lightDirTemp != lightDir) {
+            lightDir = lightDirTemp;
+        }
+    }
+
+
     mvPushMatrix();
     mat4.rotateY(mvMatrix, mvMatrix, teapotYRotationRadians);
     setMatrixUniforms();
@@ -339,15 +365,15 @@ function draw() {
 
     mat4.lookAt(mvMatrix, eyePt, viewPt, up);
     mat4.rotateY(mvMatrix, mvMatrix, modelYRotationRadians);
-    lightDir = vec3.fromValues(10.0, 10.0, 10.0);
-    vec3.rotateY(lightDir, lightDir, viewPt, modelYRotationRadians);
+
+    //vec3.rotateY(lightDir, lightDir, [0.0,10.0,0.0], 0);
     //lightDir = moveLight(lightDir);
 
     // var lightMat = mat4.fromValues(lightDir[0],0,0,0,0,lightDir[1],0,0,0,0,lightDir[2],0,0,0,0,1);
     // mat4.rotateY(lightMat, lightMat, modelYRotationRadians);
     // lightDir = vec3.fromValues(lightMat[0], lightMat[5], lightMat[10]);
 
-    uploadLightsToShader(lightDir, [0.2,0.2,0.2], [1.0,1.0,1.0], [1.0,1.0,1.0]);
+    uploadLightsToShader(lightDir, [0.4,0.4,0.4], [1.0,1.0,1.0], [1.0,1.0,1.0]);
     gl.useProgram(shaderProgram);
     drawCube();
     mvPopMatrix();
@@ -410,21 +436,13 @@ function animate() {
                 // left rotation.
                 case "ArrowLeft":
                 teapotYRotationRadians += speed;
+                lightYRotationRadians -= speed;
                 break;
 
                 // right rotation
                 case "ArrowRight":
                 teapotYRotationRadians -= speed;
-                break;
-
-                // up rotation
-                case "ArrowUp":
-                teapotXRotationRadians += speed;
-                break;
-
-                // down rotation
-                case 'ArrowDown':
-                teapotXRotationRadians -= speed;
+                lightYRotationRadians += speed;
                 break;
 
                 default:
@@ -444,22 +462,11 @@ function animate() {
                 teapotYRotationRadians -= speed;
                 break;
 
-                // up rotation
-                case "ArrowUp":
-                modelXRotationRadians += speed;
-                teapotXRotationRadians += speed;
-                break;
-
-                // down rotation
-                case 'ArrowDown':
-                modelXRotationRadians -= speed;
-                teapotXRotationRadians -= speed;
-                break;
-
                 default:
                 return; // Quit when this doesn't handle the key event.
             }
         }
+        console.log(lightDirTemp, lightDir)
 
         // Cancel the default action to avoid it being handled twice
         event.preventDefault();
