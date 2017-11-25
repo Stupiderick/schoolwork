@@ -45,6 +45,7 @@ uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 uniform mat3 uNMatrix;
 uniform vec3 uLightPosition;
+uniform mat4 uLightMatrix;
 
 varying vec3 vNormal;
 varying vec3 vPosition;
@@ -60,20 +61,12 @@ void main(void) {
     //Calaulate the normal
     vNormal = normalize(uNMatrix * aVertexNormal);
 
-    passingMoveTeapot = moveTeapot;
-
-    if (moveTeapot == 1.0) {
-        vec4 uLightPosition4 = vec4(uLightPosition, 1.0);
-        middleLight = uLightPosition4.xyz / uLightPosition4.w;
-    } else {
-        vec4 uLightPosition4 = uMVMatrix * vec4(uLightPosition, 1.0);
-        middleLight = uLightPosition4.xyz / uLightPosition4.w;
-    }
+    vec4 uLightPosition4 = uLightMatrix * vec4(uLightPosition, 1.0);
+    middleLight = uLightPosition4.xyz / uLightPosition4.w;
 
     gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
 
     diffuseColor = aVertexColor;
-    passingMVMatrix = uMVMatrix;
 }
 </script>
 
@@ -83,8 +76,6 @@ precision mediump float;
 varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec3 diffuseColor;
-varying mat4 passingMVMatrix;
-varying float passingMoveTeapot;
 
 uniform vec3 uAmbientLightColor;
 uniform vec3 uDiffuseLightColor;
@@ -93,6 +84,8 @@ uniform vec3 uAmbientMaterialColor;
 uniform vec3 uDiffuseMaterialColor;
 uniform vec3 uSpecularMaterialColor;
 uniform float useReflection;
+
+uniform mat3 invMatrix;
 
 const float shininess = 20.0;
 varying vec3 middleLight;
@@ -120,26 +113,7 @@ void main(void) {
     // get the reflection vector.
     vec3 reflection = -reflect(viewVectorEye, vNormal);
 
-    // inverse the matrix.
-    if (passingMoveTeapot == 0.0) {
-        float a00 = passingMVMatrix[0][0], a01 = passingMVMatrix[0][1], a02 = passingMVMatrix[0][2];
-        float a10 = passingMVMatrix[1][0], a11 = passingMVMatrix[1][1], a12 = passingMVMatrix[1][2];
-        float a20 = passingMVMatrix[2][0], a21 = passingMVMatrix[2][1], a22 = passingMVMatrix[2][2];
-
-        float b01 = a22 * a11 - a12 * a21;
-        float b11 = -a22 * a10 + a12 * a20;
-        float b21 = a21 * a10 - a11 * a20;
-
-        float det = a00 * b01 + a01 * b11 + a02 * b21;
-
-        mat3 invR = mat3(b01, (-a22 * a01 + a02 * a21), (a12 * a01 - a02 * a11),
-                         b11, (a22 * a00 - a02 * a20), (-a12 * a00 + a02 * a10),
-                         b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
-
-        reflection = invR * reflection;
-    } else {
-
-    }
+    reflection = invMatrix * reflection;
 
     vec3 halfway = normalize(vectorToLightSource + viewVectorEye); // halfway vector
     float hdotn = max(dot(halfway, vNormal), 0.0);
@@ -168,15 +142,17 @@ void main(void) {
 <form id="input_form">
     <fieldset>
         <b>Instruction:</b><br />
-        Press <mark>left arrow</mark> on keyboard to make left rotation; or
-        press <mark>right arrow</mark> to make right rotation. <br />
+        Press <mark>left arrow</mark> on keyboard to make clockwise rotation; or
+        press <mark>right arrow</mark> to make counterclockwise rotation. <br />
 
-        <b>Teapot face reflection options: </b>
+        <b>Teapot face options: </b><br />
         <input type="radio" id="useReflection" name="shader" value="useReflection" checked>
-        <label for="reflection-on-off">ON</label>
+        <label for="reflection-on-off">Mirror reflection</label>
         <input type="radio" id="noUseReflection" name="shader" value="noUseReflection">
-        <label for="reflection-on-off">OFF</label>
+        <label for="reflection-on-off">Color face</label>
+        <br />
 
+        <b>Orbit options: </b><br />
         <input type="radio" id="moveTeapot" name="motion" value="moveTeapot" checked>
         <label for="reflection-on-off">Move teapot</label>
         <input type="radio" id="moveCam" name="motion" value="moveCam">

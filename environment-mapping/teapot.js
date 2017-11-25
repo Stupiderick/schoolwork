@@ -26,6 +26,7 @@ var pMatrix = mat4.create();
 var nMatrix = mat3.create();
 
 var mvMatrixStack = [];
+var lightMatrixStack = [];
 
 var tVertexPositionBuffer;
 
@@ -46,10 +47,8 @@ var cubeImage;
 var cubeTexture;
 
 // For animation
-var then = 0;
 var modelYRotationRadians = degToRad(0);
 var teapotYRotationRadians = degToRad(0);
-var lightYRotationRadians = degToRad(0);
 
 // My arrays:
 var vertexArray = [];
@@ -59,15 +58,17 @@ var meshNormalArray = [];
 var colorArray = [];
 
 // State the points
-var eyePt = vec3.fromValues(0.0, 5.0, 14.0);
+var eyePt = vec3.fromValues(0.0, 5.0, 10.0);
 var viewDir = vec3.fromValues(0.0, -0.3, -1.0);
 var up = vec3.fromValues(0.0, 1.0, 0.0);
 var viewPt = vec3.fromValues(0.0, 0.0, 0.0);
-var lightDir = vec3.fromValues(10.0, 10.0, 10.0);
-var lightDirTemp = vec3.create();
+var lightDir = vec3.fromValues(40.0, 40.0, 40.0);
 
+// inverse matrix
+var invMatrix = mat3.create();
 
-var counting = 0;
+// light matrix
+var lightMatrix = mat4.create();
 
 /**
  * Sends Modelview matrix to shader
@@ -75,8 +76,11 @@ var counting = 0;
 function uploadModelViewMatrixToShader() {
     gl.useProgram(shaderTeapotProgram);
     gl.uniformMatrix4fv(shaderTeapotProgram.mvMatrixUniform, false, mvMatrix);
+    gl.uniformMatrix3fv(shaderTeapotProgram.invMatrixUniform, false, invMatrix);
+    gl.uniformMatrix4fv(shaderTeapotProgram.lightMatrixUniform, false, lightMatrix);
     gl.useProgram(shaderProgram);
     gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+
 }
 
 /**
@@ -132,6 +136,14 @@ function mvPushMatrix() {
     mvMatrixStack.push(copy);
 }
 
+/**
+ * Pushes matrix onto light matrix stack
+ */
+function lightPushMatrix() {
+    var copy = mat4.clone(lightMatrix);
+    lightMatrixStack.push(copy);
+}
+
 
 /**
  * Pops matrix off of modelview matrix stack
@@ -141,6 +153,16 @@ function mvPopMatrix() {
         throw "Invalid popMatrix!";
     }
     mvMatrix = mvMatrixStack.pop();
+}
+
+/**
+ * Pops matrix off of light matrix stack
+ */
+function lightPopMatrix() {
+    if (lightMatrixStack.length == 0) {
+        throw "Invalid popLightMatrix!";
+    }
+    lightMatrix = lightMatrixStack.pop();
 }
 
 /**
@@ -302,6 +324,8 @@ function setupTeapotShaders() {
     shaderTeapotProgram.uniformSpecularMaterialColor = gl.getUniformLocation(shaderTeapotProgram, "uSpecularMaterialColor");
     shaderTeapotProgram.uniformUseReflection = gl.getUniformLocation(shaderTeapotProgram, "useReflection");
     shaderTeapotProgram.uniformMoveTeapot = gl.getUniformLocation(shaderTeapotProgram, "moveTeapot");
+    shaderTeapotProgram.invMatrixUniform = gl.getUniformLocation(shaderTeapotProgram, "invMatrix");
+    shaderTeapotProgram.lightMatrixUniform = gl.getUniformLocation(shaderTeapotProgram, "uLightMatrix");
 }
 
 /**
@@ -332,46 +356,27 @@ function draw() {
     vec3.add(viewPt, eyePt, viewDir);
     // Then generate the lookat matrix and initialize the MV matrix to that view
     mat4.lookAt(mvMatrix, eyePt, viewPt, up);
+    mat4.lookAt(lightMatrix, eyePt, viewPt, up);
 
-
-    mvPushMatrix();
-    vec3.set(transformVec, 0.0, 0.0, 0.0);
-    mat4.translate(mvMatrix, mvMatrix, transformVec);
-
-
-
-    if (moveTeapot == 1.0) {
-        lightDirTemp = vec3.fromValues(10.0,10.0,10.0);
-        //console.log(lightDirTemp)
-        vec3.rotateY(lightDirTemp, lightDirTemp, [0.0,10.0,0.0], lightYRotationRadians);
-    }
-    else if (moveTeapot == 0.0) {
-        //console.log("y")
-        if (lightDirTemp != lightDir) {
-            lightDir = lightDirTemp;
-        }
-    }
-
+    keyListener();
 
     mvPushMatrix();
-    mat4.rotateY(mvMatrix, mvMatrix, teapotYRotationRadians);
-    setMatrixUniforms();
-    gl.useProgram(shaderTeapotProgram);
-    reflectionRadio(useReflection);
-    moveRadio(moveTeapot);
+        lightPushMatrix();
+        mat4.rotateY(mvMatrix, mvMatrix, modelYRotationRadians);
+        mat4.rotateY(lightMatrix, lightMatrix, modelYRotationRadians);
+        mat3.fromMat4(invMatrix, lightMatrix);
+        mat3.invert(invMatrix, invMatrix);
 
-    drawTeapot();
-    mvPopMatrix();
+            mvPushMatrix();
+            mat4.rotateY(mvMatrix, mvMatrix, teapotYRotationRadians);
+            setMatrixUniforms();
+            gl.useProgram(shaderTeapotProgram);
+            reflectionRadio(useReflection);
+            moveRadio(moveTeapot);
+            drawTeapot();
+            mvPopMatrix();
 
-    mat4.lookAt(mvMatrix, eyePt, viewPt, up);
-    mat4.rotateY(mvMatrix, mvMatrix, modelYRotationRadians);
-
-    //vec3.rotateY(lightDir, lightDir, [0.0,10.0,0.0], 0);
-    //lightDir = moveLight(lightDir);
-
-    // var lightMat = mat4.fromValues(lightDir[0],0,0,0,0,lightDir[1],0,0,0,0,lightDir[2],0,0,0,0,1);
-    // mat4.rotateY(lightMat, lightMat, modelYRotationRadians);
-    // lightDir = vec3.fromValues(lightMat[0], lightMat[5], lightMat[10]);
+        lightPopMatrix();
 
     uploadLightsToShader(lightDir, [0.4,0.4,0.4], [1.0,1.0,1.0], [1.0,1.0,1.0]);
     gl.useProgram(shaderProgram);
@@ -422,6 +427,13 @@ function drawTeapot() {
  * Animation to be called from tick. Updates global rotation values.
  */
 function animate() {
+    // nothing in it??!!
+}
+
+/**
+ * Listen the key press to do the rotation.
+ */
+function keyListener() {
     var speed = 0.02;
 
     window.addEventListener("keydown", function (event) {
@@ -429,20 +441,16 @@ function animate() {
             return; // Do nothing if the event was already processed
         }
 
-
-
         if (moveTeapot == 1.0) {
             switch (event.key) {
                 // left rotation.
                 case "ArrowLeft":
                 teapotYRotationRadians += speed;
-                lightYRotationRadians -= speed;
                 break;
 
                 // right rotation
                 case "ArrowRight":
                 teapotYRotationRadians -= speed;
-                lightYRotationRadians += speed;
                 break;
 
                 default:
@@ -453,20 +461,17 @@ function animate() {
                 // left rotation.
                 case "ArrowLeft":
                 modelYRotationRadians += speed;
-                teapotYRotationRadians += speed;
                 break;
 
                 // right rotation
                 case "ArrowRight":
                 modelYRotationRadians -= speed;
-                teapotYRotationRadians -= speed;
                 break;
 
                 default:
                 return; // Quit when this doesn't handle the key event.
             }
         }
-        console.log(lightDirTemp, lightDir)
 
         // Cancel the default action to avoid it being handled twice
         event.preventDefault();
