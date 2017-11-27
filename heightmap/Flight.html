@@ -1,0 +1,139 @@
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title> Flight </title>
+<meta charset="utf-8">
+</head>
+
+<script id="shader-phong-phong-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexNormal;
+attribute vec3 aVertexPosition;
+attribute vec3 aVertexColor;
+attribute vec2 aTexcoord;
+
+uniform mat4 uMVMatrix;
+uniform mat4 uPMatrix;
+uniform mat3 uNMatrix;
+varying vec3 vNormal;
+varying vec3 vPosition;
+varying vec3 diffuseColor;
+varying vec2 vTexcoord;
+
+void main(void) {
+    // Get the vertex position in eye coordinates
+    vec4 vertexPositionEye4 = uMVMatrix * vec4(aVertexPosition, 1.0);
+    vPosition = vertexPositionEye4.xyz / vertexPositionEye4.w;
+    //Calaulate the normal
+    vNormal = normalize(uNMatrix * aVertexNormal);
+
+    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+    diffuseColor = aVertexColor;
+
+    // pass the texture to the fragment shader.
+    vTexcoord = aTexcoord;
+}
+</script>
+
+<!-- The fragment shader for turning on fog effect. -->
+<script id="shader-phong-phong-fs" type="x-shader/x-fragment">
+precision mediump float;
+
+varying vec3 vNormal;
+varying vec3 vPosition;
+varying vec3 diffuseColor;
+
+// pass from the vertex shader.
+varying vec2 vTexcoord;
+
+// the texture
+uniform sampler2D uTexture;
+
+// control fog effect.
+uniform float showFog;
+
+uniform vec3 uLightPosition;
+uniform vec3 uAmbientLightColor;
+uniform vec3 uDiffuseLightColor;
+uniform vec3 uSpecularLightColor;
+uniform vec3 uAmbientMaterialColor;
+uniform vec3 uDiffuseMaterialColor;
+uniform vec3 uSpecularMaterialColor;
+
+uniform vec3 halfway;
+
+void main(void) {
+    const float LOG2 = 1.442695;
+    float fogCoord = (gl_FragCoord.y / gl_FragCoord.w)/5.0;
+    vec4 fogColor = vec4(1.0, 1.0, 1.0, 1.0);
+    float density = 0.005;
+    float fogFactor = exp2(-density * density * fogCoord * fogCoord * LOG2);
+    fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+    vec4 vColor;
+    // Calculate the vector (l) to the light source
+    vec3 vectorToLightSource = normalize(uLightPosition - vPosition);
+
+    // Calculate n dot l for diffuse lighting
+    float diffuseLightWeightning = max(dot(vNormal, vectorToLightSource), 0.0);
+
+    // Calculate the reflection vector (r) that is needed for specular light
+    vec3 reflectionVector = normalize(reflect(-vectorToLightSource, vNormal));
+
+    // The camera in eye coordinates is located in the origin and is pointing
+    // along the negative z-axis. Calculate viewVector (v)
+    // in eye coordinates as:
+    // (0.0, 0.0, 0.0) - vertexPositionEye3
+    vec3 viewVectorEye = -normalize(vPosition);
+
+    vec3 halfway = normalize(vectorToLightSource + viewVectorEye); // halfway vector
+    float hdotn = max(dot(halfway, vNormal), 0.0);
+
+    float specularLightWeightning = pow(hdotn, 500.0);
+
+    vColor = vec4(((uAmbientLightColor * diffuseColor)
+                 + (uDiffuseLightColor * diffuseColor) * diffuseLightWeightning
+                 + (uSpecularLightColor) * specularLightWeightning), 1.0);
+
+    //vColor = texture2D(uTexture, vTexcoord);
+
+    if (showFog == 1.0) {
+        gl_FragColor = mix(fogColor, vColor, fogFactor);
+    } else {
+        gl_FragColor = vColor;
+    }
+}
+</script>
+
+<script src="gl-matrix-min.js"></script>
+<script src="webgl-utils.js"></script>
+<script src="simpleModeling.js"></script>
+<script src="terrainModeling.js"></script>
+<script src="flight.js"></script>
+<script src="terrainHeightMap.js"></script>
+<body onload="startup();">
+    <canvas id="myGLCanvas" width="750" height="750"></canvas>
+    <form id="input_form">
+        <fieldset>
+            Please select whether the fog effect is on:
+            <div>
+                <input type="radio" id="phong-phong-fog" name="shader" value="phong-phong-fog" checked>
+                <label for="phongphong">Fog effect ON</label>
+                <input type="radio" id="phong-phong-no-fog" name="shader" value="phong-phong-no-fog">
+                <label for="phongphongnofog">Fog effect OFF</label>
+            </div>
+            <p>
+                Press '+' to increase the speed, or press '-' to decrease the speed.
+                Your speed: <mark id="speedscreen"></mark> knots. (There is a minimum speed)<br />
+                Press 'up' key to pitch upward, or press 'down' key to pitch downward.<br />
+                Press 'left' key to roll counterclockwisely, or press 'right' key to roll clockwisely.<br />
+            </p>
+        </fieldset>
+    </form>
+
+    <!-- <canvas id="myCanvas" width="512" height="512" style="border:1px solid #d3d3d3;"></canvas> -->
+    <br />
+    Grayscale height map: <br />
+    <canvas id="myCanvas" width="512" height="512"></canvas>
+</body>
+</html>
