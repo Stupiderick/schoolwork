@@ -20,8 +20,11 @@ var tIndexEdgeBuffer;
 // create a place to store the colors.
 var tVertexColorBuffer;
 
-var pixelData = [];
+// store the height information of the terrain
 var heightData = [];
+
+// store the color information of the terrain
+var colorData = [];
 
 // View parameters
 var eyePt = vec3.fromValues(0.0,0.0,0.0);
@@ -52,15 +55,11 @@ var mvMatrixStack = [];
 // record angle that has spinned.
 var angle = 0.0;
 
-var heightMapGray;
-var terrainTexture;
-
-
 //-------------------------------------------------------------------------
 /**
  * Populates terrain buffers for terrain generation
  */
-function setupTerrainBuffers() {
+function setupBuffers() {
     var vTerrain = [];
     var fTerrain = [];
     var nTerrain = [];
@@ -68,8 +67,8 @@ function setupTerrainBuffers() {
     var cTerrain = [];
     var gridN = 1024;
 
-    //var numT = terrainGenerator(gridN, -1, 1, -1, 1, vTerrain, fTerrain, nTerrain, cTerrain);
-    var numT = terrainReader(gridN, -1, 1, -1, 1, vTerrain, fTerrain, nTerrain, cTerrain);
+    var numT = terrainReader(gridN, -1, 1, -1, 1, vTerrain, fTerrain, nTerrain);
+    colorReader(gridN, -1, 1, -1, 1, cTerrain);
 
     console.log("Generated ", numT, " triangles");
     tVertexPositionBuffer = gl.createBuffer();
@@ -98,16 +97,6 @@ function setupTerrainBuffers() {
                   gl.STATIC_DRAW);
     tIndexTriBuffer.itemSize = 1;
     tIndexTriBuffer.numItems = fTerrain.length;
-
-    //Setup Edges
-    generateLinesFromIndexedTriangles(fTerrain, eTerrain);
-    tIndexEdgeBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tIndexEdgeBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(eTerrain),
-                  gl.STATIC_DRAW);
-    tIndexEdgeBuffer.itemSize = 1;
-    tIndexEdgeBuffer.numItems = eTerrain.length;
-
 }
 
 //-------------------------------------------------------------------------
@@ -132,35 +121,8 @@ function drawTerrain(){
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tIndexTriBuffer);
     // setMatrixUniforms();
     var ext = gl.getExtension('OES_element_index_uint');
-    // gl.drawElements(gl.TRIANGLES, tIndexTriBuffer.numItems, gl.UNSIGNED_INT, 0);
     gl.drawElements(gl.TRIANGLES, tIndexTriBuffer.numItems, gl.UNSIGNED_INT, 0);
 }
-
-//-------------------------------------------------------------------------
-/**
- * Draws edge of terrain from the edge buffer
- */
-// function drawTerrainEdges(){
-//     gl.polygonOffset(1,1);
-//     gl.bindBuffer(gl.ARRAY_BUFFER, tVertexPositionBuffer);
-//     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-//                        tVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-//
-//     gl.bindBuffer(gl.ARRAY_BUFFER, tVertexColorBuffer);
-//     gl.vertexAttribPointer(shaderProgram.vertexColorAttribute,
-//                         tVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
-//
-//  // Bind normal buffer
-//     gl.bindBuffer(gl.ARRAY_BUFFER, tVertexNormalBuffer);
-//     gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute,
-//                            tVertexNormalBuffer.itemSize,
-//                            gl.FLOAT, false, 0, 0);
-//
-//  //Draw
-//     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tIndexEdgeBuffer);
-//     //var ext = gl.getExtension('OES_element_index_uint');
-//     gl.drawElements(gl.LINES, tIndexEdgeBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-// }
 
 //-------------------------------------------------------------------------
 /**
@@ -306,39 +268,6 @@ function loadShaderFromDOM(id) {
 }
 
 
-// /**
-//  * @param {number} value Value to determine whether it is a power of 2
-//  * @return {boolean} Boolean of whether value is a power of 2
-//  */
-// function isPowerOf2(value) {
-//     return (value & (value - 1)) == 0;
-// }
-
-// /**
-//  * Texture handling. Generates mipmap and sets texture parameters.
-//  * @param {Object} image Image for cube application
-//  * @param {Object} texture Texture for cube application
-//  */
-// function handleTextureLoaded(image, texture) {
-//   console.log("handleTextureLoaded, image = " + image);
-//   gl.bindTexture(gl.TEXTURE_2D, texture);
-//   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
-//   // Check if the image is a power of 2 in both dimensions.
-//   if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-//      // Yes, it's a power of 2. Generate mips.
-//      gl.generateMipmap(gl.TEXTURE_2D);
-//      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-//      console.log("Loaded power of 2 texture");
-//   } else {
-//      // No, it's not a power of 2. Turn of mips and set wrapping to clamp to edge
-//      gl.texParameteri(gl.TETXURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-//      gl.texParameteri(gl.TETXURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-//      gl.texParameteri(gl.TETXURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-//      console.log("Loaded non-power of 2 texture");
-//   }
-//   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-// }
-
 //----------------------------------------------------------------------------------
 /**
  * Setup the fragment and vertex shaders
@@ -367,66 +296,12 @@ function setupShaders(vshader, fshader) {
     shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
     gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 
-    // shaderProgram.texCoordAttribute = gl.getAttribLocation(shaderProgram, "aTexcoord");
-    // gl.enableVertexAttribArray(shaderProgram.texCoordAttribute);
-    // gl.vertexAttribPointer(shaderProgram.texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-    // setTexcoords(gl);
-
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
-    shaderProgram.uniformLightPositionLoc = gl.getUniformLocation(shaderProgram, "uLightPosition");
-    shaderProgram.uniformAmbientLightColorLoc = gl.getUniformLocation(shaderProgram, "uAmbientLightColor");
-    shaderProgram.uniformDiffuseLightColorLoc = gl.getUniformLocation(shaderProgram, "uDiffuseLightColor");
-    shaderProgram.uniformSpecularLightColorLoc = gl.getUniformLocation(shaderProgram, "uSpecularLightColor");
-
-    shaderProgram.uniformDiffuseMaterialColor = gl.getUniformLocation(shaderProgram, "uDiffuseMaterialColor");
-    shaderProgram.uniformAmbientMaterialColor = gl.getUniformLocation(shaderProgram, "uAmbientMaterialColor");
-    shaderProgram.uniformSpecularMaterialColor = gl.getUniformLocation(shaderProgram, "uSpecularMaterialColor");
-
-    shaderProgram.uniformChecking = gl.getUniformLocation(shaderProgram, "checking");
     shaderProgram.uniformShowFog = gl.getUniformLocation(shaderProgram, "showFog");
 }
 
-
-//-------------------------------------------------------------------------
-/**
- * Sends material information to the shader
- * @param {Float32Array} a diffuse material color
- * @param {Float32Array} a ambient material color
- * @param {Float32Array} a specular material color
- * @param {Float32} the shininess exponent for Phong illumination
- */
-function uploadMaterialToShader(dcolor, acolor, scolor, shiny) {
-    gl.uniform3fv(shaderProgram.uniformDiffuseMaterialColor, dcolor);
-    gl.uniform3fv(shaderProgram.uniformAmbientMaterialColor, acolor);
-    gl.uniform3fv(shaderProgram.uniformSpecularMaterialColor, scolor);
-    gl.uniform1f(shaderProgram.uniformShininess, shiny);
-}
-
-
-//-------------------------------------------------------------------------
-/**
- * Sends light information to the shader
- * @param {Float32Array} loc Location of light source
- * @param {Float32Array} a Ambient light strength
- * @param {Float32Array} d Diffuse light strength
- * @param {Float32Array} s Specular light strength
- */
-function uploadLightsToShader(loc,a,d,s) {
-    gl.uniform3fv(shaderProgram.uniformLightPositionLoc, loc);
-    gl.uniform3fv(shaderProgram.uniformAmbientLightColorLoc, a);
-    gl.uniform3fv(shaderProgram.uniformDiffuseLightColorLoc, d);
-    gl.uniform3fv(shaderProgram.uniformSpecularLightColorLoc, s);
-}
-
-//----------------------------------------------------------------------------------
-/**
- * Populate buffers with data
- */
-function setupBuffers() {
-    setupTerrainBuffers();
-}
 
 //----------------------------------------------------------------------------------
 /**
@@ -472,13 +347,8 @@ function draw() {
     mat4.rotateX(mvMatrix, mvMatrix, degToRad(-75));
     mat4.rotateZ(mvMatrix, mvMatrix, degToRad(25));
     setMatrixUniforms();
-
-    shiny = 1.0;
     fogRadio(showFog);
-
-    uploadLightsToShader([0,20,20],[0.0,0.0,0.0],[1.0,1.0,1.0],[1.0,1.0,1.0]);
     drawTerrain();
-
     mvPopMatrix();
 }
 
@@ -495,12 +365,13 @@ function keyListener() {
         switch (event.key) {
             // speed down ------------------------------
             case "-":
-            speed > 0.0 ? speed -= 0.0025 : speed = 0.0;
+            speed > 0.0025 ? speed -= 0.0025 : speed = 0.0025;
             break;
 
             // Prevent distinguishing
             case "_":
-            speed > 0.0 ? speed -= 0.0025 : speed = 0.0;
+            speed > 0.0025 ? speed -= 0.0025 : speed = 0.0025;
+
             break;
             //------------------------------------------
 
@@ -558,69 +429,6 @@ function keyListener() {
     }, true);
 }
 
-//----------------------------------------------------------------------------------
-/**
- * Animation to be called from tick. Updates globals and performs animation for each tick.
- */
-function animate() {
-    //days = days + 0.5;
-}
-
-// /**
-//  * Creates texture for application to cube.
-//  */
-// function setupTextures() {
-//     terrainTexture = gl.createTexture();
-//     gl.bindTexture(gl.TEXTURE_2D, terrainTexture);
-//     // Fill the texture with a 1x1 blue pixel.
-//     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-//               new Uint8Array([0, 0, 255, 255]));
-//
-//     heightMapGray = new Image();
-//     heightMapGray.onload = function() {
-//         handleTextureLoaded(heightMapGray, terrainTexture);
-//     }
-//
-//     heightMapGray.src = "images/heightHMBIG.png";
-// }
-
-/**
- * Texture handling. Generates mipmap and sets texture parameters.
- * @param {Object} image Image for cube application
- * @param {Object} texture Texture for cube application
- */
-// function handleTextureLoaded(image, texture) {
-//     console.log("handleTextureLoaded, image = " + image);
-//     gl.bindTexture(gl.TEXTURE_2D, texture);
-//     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
-//     // Check if the image is a power of 2 in both dimensions.
-//     if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-//         // Yes, it's a power of 2. Generate mips.
-//         gl.generateMipmap(gl.TEXTURE_2D);
-//         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.LINEAR_MIPMAP_NEAREST);
-//         console.log("Loaded power of 2 texture");
-//     } else {
-//         // No, it's not a power of 2. Turn of mips and set wrapping to clamp to edge
-//         gl.texParameteri(gl.TETXURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-//         gl.texParameteri(gl.TETXURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-//         gl.texParameteri(gl.TETXURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-//         console.log("Loaded non-power of 2 texture");
-//     }
-//     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-//
-//
-//     // //The texture wraps over the edges (repeats) in the x direction
-//     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-//     //
-//     // //The texture wraps over the edges (repeats) in the y direction
-//     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-//     //
-//     // //when the texture area is large, repeat texel nearest center
-//     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-//     //
-//     // //when the texture area is small, repeat texel nearest center
-//     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-// }
 
 //----------------------------------------------------------------------------------
 /**
@@ -644,5 +452,4 @@ function startup() {
 function tick() {
     requestAnimFrame(tick);
     draw();
-    animate();
 }

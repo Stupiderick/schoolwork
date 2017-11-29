@@ -1,4 +1,7 @@
 
+// store the raw height data of the terrain
+var pixelHeightData = [];
+
 var imageObj = new Image();
 imageObj.onload = function() {
     getHeightFromGrayscale(this);
@@ -17,7 +20,7 @@ imageObj.src = 'images/heightHMBIG.png';
  * @param {Array} normalArray Array that will contain normals generated
  * @return {number}
  */
-function terrainReader(n, minX, maxX, minY, maxY, vertexArray, faceArray, normalArray, colorArray) {
+function terrainReader(n, minX, maxX, minY, maxY, vertexArray, faceArray, normalArray) {
     if (Math.log2(n) % 1 != 0) {
         alert("Not a valid edge length!!");
         return;
@@ -27,46 +30,44 @@ function terrainReader(n, minX, maxX, minY, maxY, vertexArray, faceArray, normal
     var countArray = [];
     var imgEdge = Math.sqrt(heightData.length);
 
-    for (var i = 0; i <= n*n; i++) {
+    for (var i = 0; i < (n+1)*(n+1); i++) {
         heightArray.push(0);
         countArray.push(0);
     }
 
     for (var j = 0; j < imgEdge; j++) {
         for (var i = 0; i < imgEdge; i++) {
-            heightArray[j*3075+i*2] += heightData[j*512+i];
-            heightArray[j*3075+i*2+1] += heightData[j*512+i];
-            heightArray[j*3075+i*2+2] += heightData[j*512+i];
+            var z = 511 - j;
+            heightArray[z*2050+i*2] += heightData[j*512+i];
+            heightArray[z*2050+i*2+1] += heightData[j*512+i];
+            heightArray[z*2050+i*2+2] += heightData[j*512+i];
 
-            heightArray[j*3075+i*2+1025] += heightData[j*512+i];
-            heightArray[j*3075+i*2+1026] += heightData[j*512+i];
-            heightArray[j*3075+i*2+1027] += heightData[j*512+i];
+            heightArray[z*2050+i*2+1025] += heightData[j*512+i];
+            heightArray[z*2050+i*2+1026] += heightData[j*512+i];
+            heightArray[z*2050+i*2+1027] += heightData[j*512+i];
 
-            heightArray[j*3075+i*2+2050] += heightData[j*512+i];
-            heightArray[j*3075+i*2+2051] += heightData[j*512+i];
-            heightArray[j*3075+i*2+2052] += heightData[j*512+i];
+            heightArray[z*2050+i*2+2050] += heightData[j*512+i];
+            heightArray[z*2050+i*2+2051] += heightData[j*512+i];
+            heightArray[z*2050+i*2+2052] += heightData[j*512+i];
 
 
-            countArray[j*3075+i*2] += 1;
-            countArray[j*3075+i*2+1] += 1;
-            countArray[j*3075+i*2+2] += 1;
+            countArray[z*2050+i*2] += 1;
+            countArray[z*2050+i*2+1] += 1;
+            countArray[z*2050+i*2+2] += 1;
 
-            countArray[j*3075+i*2+1025] += 1;
-            countArray[j*3075+i*2+1026] += 1;
-            countArray[j*3075+i*2+1027] += 1;
+            countArray[z*2050+i*2+1025] += 1;
+            countArray[z*2050+i*2+1026] += 1;
+            countArray[z*2050+i*2+1027] += 1;
 
-            countArray[j*3075+i*2+2050] += 1;
-            countArray[j*3075+i*2+2051] += 1;
-            countArray[j*3075+i*2+2052] += 1;
+            countArray[z*2050+i*2+2050] += 1;
+            countArray[z*2050+i*2+2051] += 1;
+            countArray[z*2050+i*2+2052] += 1;
         }
     }
 
     for (var i = 0; i < heightArray.length; i++) {
         heightArray[i] = heightArray[i] / countArray[i];
-        if (heightArray[i] == 0) {
-        }
     }
-
 
     var deltaX = (maxX - minX) / n;
     var deltaY = (maxY - minY) / n;
@@ -74,16 +75,13 @@ function terrainReader(n, minX, maxX, minY, maxY, vertexArray, faceArray, normal
         for(var i = 0; i <= n; i++) {
             vertexArray.push(minY + deltaY * i);
             vertexArray.push(minX + deltaX * j);
-            vertexArray.push(heightArray[j*n+i]/700.0);
+            vertexArray.push(heightArray[j*(n+1)+i]/500.0);
 
             normalArray.push(0);
             normalArray.push(0);
             normalArray.push(1);
         }
     }
-
-    generateColor(n, colorArray, vertexArray);
-    updateNormalArray(n, vertexArray, normalArray);
 
     var numT = 0;
     for(var i = 0; i < n; i++) {
@@ -105,9 +103,6 @@ function terrainReader(n, minX, maxX, minY, maxY, vertexArray, faceArray, normal
     for (var i = 0; i < vertexArray.length/3; i++) {
         heightPoint.push(vertexArray[i*3]);
     }
-    // console.log("heightArray", heightArray)
-     console.log("heightData", heightData)
-    // console.log("pixelData", pixelData)
     return numT;
 }
 
@@ -161,7 +156,7 @@ function getHeightArray(n) {
  * @param imageObj
  */
 function drawImage(imageObj) {
-    var canvas = document.getElementById('myCanvas');
+    var canvas = document.getElementById('grayMap');
     var context = canvas.getContext('2d');
     var imageX = 0;
     var imageY = 0;
@@ -171,7 +166,7 @@ function drawImage(imageObj) {
     context.drawImage(imageObj, imageX, imageY);
 
     var imageData = context.getImageData(imageX, imageY, imageWidth, imageHeight);
-    pixelData = imageData.data;
+    pixelHeightData = imageData.data;
 }
 
 
@@ -181,7 +176,7 @@ function drawImage(imageObj) {
  */
 function getHeightFromGrayscale(imageObj) {
     drawImage(imageObj);
-    for (var i = 0; i < pixelData.length / 4; i++) {
-        heightData[i] = pixelData[i*4];
+    for (var i = 0; i < pixelHeightData.length / 4; i++) {
+        heightData[i] = pixelHeightData[i*4];
     }
 }
