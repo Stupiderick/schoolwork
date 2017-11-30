@@ -27,12 +27,12 @@ var heightData = [];
 var colorData = [];
 
 // View parameters
-var eyePt = vec3.fromValues(0.0,0.0,0.0);
-var viewDir = vec3.fromValues(0.0,0.0,-1.0);
-var up = vec3.fromValues(0.0,1.0,0.0);
-var viewPt = vec3.fromValues(0.0,0.0,0.0);
+var eyePt = vec3.fromValues(0.0, 0.0, -1.0);
+var viewDir = vec3.fromValues(0.0, 0.0, -1.0);
+var up = vec3.fromValues(0.0, 1.0, 0.0);
+var viewPt = vec3.fromValues(0.0, 0.0, 0.0);
 var speedFactor = vec3.create();
-var speed = 0.0075;
+var speed = 0.002;
 //var curViewDir = new glMatrix.ARRAY_TYPE(4);
 var curViewDir = quat.fromValues(viewDir[0], viewDir[1], viewDir[2], 0.0);
 //var curUp = new glMatrix.ARRAY_TYPE(4);
@@ -365,24 +365,23 @@ function keyListener() {
         switch (event.key) {
             // speed down ------------------------------
             case "-":
-            speed > 0.0025 ? speed -= 0.0025 : speed = 0.0025;
+            speed > 0.001 ? speed -= 0.001 : speed = 0.001;
             break;
 
             // Prevent distinguishing
             case "_":
-            speed > 0.0025 ? speed -= 0.0025 : speed = 0.0025;
-
+            speed > 0.001 ? speed -= 0.001 : speed = 0.001;
             break;
             //------------------------------------------
 
             // speed up --------------------------------
             case "+":
-            speed += 0.0025;
+            speed += 0.001;
             break;
 
             // Prevent distinguishing
             case "=":
-            speed += 0.0025;
+            speed += 0.001;
             break;
             //------------------------------------------
 
