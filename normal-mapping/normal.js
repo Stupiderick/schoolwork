@@ -4,20 +4,35 @@ var canvas;
 
 var shaderProgram;
 
+// arrays we need for sphere
 var vertexArray = [];
 var normalArray = [];
 var faceArray = [];
-var moonVertexPositionBuffer;
-var moonVertexNormalBuffer;
-var moonVertexTextureCoordBuffer;
-var moonVertexIndexBuffer;
-var moonTexture;
+var textureCoordArray = [];
+var _tangentArray = [];
+var _bitangentArray = [];
+var _normalArray = [];
+
+// buffers
+var tVertexPositionBuffer;
+var tVertexNormalBuffer;
+var tVertexTextureCoordBuffer;
+var tVertexIndexBuffer;
+var tsTangentBuffer;
+var tsBitangentBuffer;
+var tsNormalBuffer;
+
+// texture
+var sphereTexture;
+
+var num;
+
 // State the points
-var eyePt = vec3.fromValues(0.0, 4.0, 15.0);
-var viewDir = vec3.fromValues(0.0, -0.3, -1.0);
+var eyePt = vec3.fromValues(0.0, 4.0, 16.0);
+var viewDir = vec3.fromValues(0.0, -0.5, -1.0);
 var up = vec3.fromValues(0.0, 1.0, 0.0);
 var viewPt = vec3.fromValues(0.0, 0.0, 0.0);
-var lightDir = vec3.fromValues(40.0, 40.0, 40.0);
+var lightDir = vec3.fromValues(-10.0, -10.0, -10.0);
 
 // Create ModelView matrix
 var mvMatrix = mat4.create();
@@ -27,8 +42,10 @@ var pMatrix = mat4.create();
 
 var mvMatrixStack = [];
 
+// serve for rotation.
 var modelXRotationRadians = degToRad(0);
 var modelYRotationRadians = degToRad(0);
+
 
 /**
  * Sends Modelview matrix to shader
@@ -69,6 +86,21 @@ function mvPopMatrix() {
 function setMatrixUniforms() {
     uploadModelViewMatrixToShader();
     uploadProjectionMatrixToShader();
+}
+
+/**
+ * Sends light information to the shader
+ * @param {Float32Array} loc Location of light source
+ * @param {Float32Array} a Ambient light strength
+ * @param {Float32Array} d Diffuse light strength
+ * @param {Float32Array} s Specular light strength
+ */
+function uploadLightsToShader(loc,a,d,s) {
+    gl.useProgram(shaderProgram);
+    gl.uniform3fv(shaderProgram.uniformLightPositionLoc, loc);
+    gl.uniform3fv(shaderProgram.ambientColorUniform, a);
+    gl.uniform3fv(shaderProgram.lightingDirectionUniform, d);
+    gl.uniform3fv(shaderProgram.directionalColorUniform, s);
 }
 
 /**
@@ -184,6 +216,7 @@ function setupShaders() {
     shaderProgram.ambientColorUniform = gl.getUniformLocation(shaderProgram, "uAmbientColor");
     shaderProgram.lightingDirectionUniform = gl.getUniformLocation(shaderProgram, "uLightingDirection");
     shaderProgram.directionalColorUniform = gl.getUniformLocation(shaderProgram, "uDirectionalColor");
+    shaderProgram.uniformLightPositionLoc = gl.getUniformLocation(shaderProgram, "uLightPosition");
 }
 
 
@@ -191,13 +224,13 @@ function setupShaders() {
  * Creates texture for application to cube.
  */
 function setupTextures() {
-    moonTexture = gl.createTexture();
-    moonTexture.image = new Image();
-    moonTexture.image.onload = function () {
-        handleTextureLoaded(moonTexture);
+    sphereTexture = gl.createTexture();
+    sphereTexture.image = new Image();
+    sphereTexture.image.onload = function () {
+        handleTextureLoaded(sphereTexture);
     }
 
-    moonTexture.image.src = "blocks_normal.jpg";
+    sphereTexture.image.src = "blocks_normal.jpg";
 }
 
 /**
@@ -225,25 +258,76 @@ function handleTextureLoaded(texture) {
 }
 
 /**
- * Sets up buffers for cube.
- */
-/**
  * Populate buffers with data
  */
 function setupBuffers() {
+    buildSphere();
+
+    // num = sphereFromSubdivision(6, vertexArray, normalArray);
+    //console.log(vertexArray)
+    // getTextureCoord();
+
+    tVertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, tVertexPositionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexArray), gl.STATIC_DRAW);
+    tVertexPositionBuffer.itemSize = 3;
+    tVertexPositionBuffer.numItems = vertexArray.length / 3;
+
+    tVertexTextureCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, tVertexTextureCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordArray), gl.STATIC_DRAW);
+    tVertexTextureCoordBuffer.itemSize = 2;
+    tVertexTextureCoordBuffer.numItems = textureCoordArray.length / 2;
+
+    tVertexNormalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, tVertexNormalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalArray), gl.STATIC_DRAW);
+    tVertexNormalBuffer.itemSize = 3;
+    tVertexNormalBuffer.numItems = normalArray.length / 3;
+
+    tsTangentBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tsTangentBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Float32Array(_tangentArray), gl.STATIC_DRAW);
+    tsTangentBuffer.itemSize = 1;
+    tsTangentBuffer.numItems = _tangentArray.length;
+
+    tsBitangentBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tsBitangentBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Float32Array(_bitangentArray), gl.STATIC_DRAW);
+    tsBitangentBuffer.itemSize = 1;
+    tsBitangentBuffer.numItems = _bitangentArray.length;
+
+    tsNormalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tsNormalBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Float32Array(_normalArray), gl.STATIC_DRAW);
+    tsNormalBuffer.itemSize = 1;
+    tsNormalBuffer.numItems = _normalArray.length;
+
+    tVertexIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tVertexIndexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(faceArray), gl.STATIC_DRAW);
+    tVertexIndexBuffer.itemSize = 1;
+    tVertexIndexBuffer.numItems = faceArray.length;
+}
+
+function getTextureCoord() {
+    for (var i = 0; i < vertexArray.length; i += 3) {
+        textureCoordArray.push(Math.atan2(vertexArray[i], vertexArray[i+2]) / (2*Math.PI) + 0.5);
+        textureCoordArray.push(vertexArray[i+1] * 0.5 + 0.5);
+    }
+}
+
+function buildSphere() {
     var latitudeBands = 30;
     var longitudeBands = 30;
     var radius = 2;
 
-    var vertexPositionData = [];
-    var normalData = [];
-    var textureCoordData = [];
-    for (var latNumber=0; latNumber <= latitudeBands; latNumber++) {
+    for (var latNumber = 0; latNumber <= latitudeBands; latNumber++) {
         var theta = latNumber * Math.PI / latitudeBands;
         var sinTheta = Math.sin(theta);
         var cosTheta = Math.cos(theta);
 
-        for (var longNumber=0; longNumber <= longitudeBands; longNumber++) {
+        for (var longNumber = 0; longNumber <= longitudeBands; longNumber++) {
             var phi = longNumber * 2 * Math.PI / longitudeBands;
             var sinPhi = Math.sin(phi);
             var cosPhi = Math.cos(phi);
@@ -254,55 +338,156 @@ function setupBuffers() {
             var u = 1 - (longNumber / longitudeBands);
             var v = 1 - (latNumber / latitudeBands);
 
-            normalData.push(x);
-            normalData.push(y);
-            normalData.push(z);
-            textureCoordData.push(u);
-            textureCoordData.push(v);
-            vertexPositionData.push(radius * x);
-            vertexPositionData.push(radius * y);
-            vertexPositionData.push(radius * z);
+            normalArray.push(x);
+            normalArray.push(y);
+            normalArray.push(z);
+            textureCoordArray.push(u);
+            textureCoordArray.push(v);
+            vertexArray.push(radius*x);
+            vertexArray.push(radius*y);
+            vertexArray.push(radius*z);
         }
     }
 
-    var indexData = [];
-    for (var latNumber=0; latNumber < latitudeBands; latNumber++) {
-        for (var longNumber=0; longNumber < longitudeBands; longNumber++) {
+    console.log("texture coord", textureCoordArray)
+    console.log("normal array", normalArray)
+    console.log("vertex array", vertexArray)
+
+    for (var latNumber = 0; latNumber < latitudeBands; latNumber++) {
+        for (var longNumber = 0; longNumber < longitudeBands; longNumber++) {
             var first = (latNumber * (longitudeBands + 1)) + longNumber;
             var second = first + longitudeBands + 1;
-            indexData.push(first);
-            indexData.push(second);
-            indexData.push(first + 1);
+            faceArray.push(first);
+            faceArray.push(second);
+            faceArray.push(first+1);
 
-            indexData.push(second);
-            indexData.push(second + 1);
-            indexData.push(first + 1);
+            faceArray.push(second);
+            faceArray.push(second+1);
+            faceArray.push(first+1);
         }
     }
+    console.log("face array", faceArray)
 
-    moonVertexNormalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexNormalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
-    moonVertexNormalBuffer.itemSize = 3;
-    moonVertexNormalBuffer.numItems = normalData.length / 3;
+    findTangentSpace();
 
-    moonVertexTextureCoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexTextureCoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
-    moonVertexTextureCoordBuffer.itemSize = 2;
-    moonVertexTextureCoordBuffer.numItems = textureCoordData.length / 2;
+    console.log("_tangent", _tangentArray)
+    console.log("_bitangent", _bitangentArray)
+    console.log("_normal", _normalArray)
+}
 
-    moonVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositionData), gl.STATIC_DRAW);
-    moonVertexPositionBuffer.itemSize = 3;
-    moonVertexPositionBuffer.numItems = vertexPositionData.length / 3;
 
-    moonVertexIndexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, moonVertexIndexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
-    moonVertexIndexBuffer.itemSize = 1;
-    moonVertexIndexBuffer.numItems = indexData.length;
+function findTangentSpace() {
+    for (var i = 0; i < faceArray.length*3; i++) {
+        _normalArray.push(0.0);
+        _tangentArray.push(0.0);
+        _bitangentArray.push(0.0);
+    }
+
+    for (var i = 0; i < faceArray.length; i += 3) {
+        var point0 = faceArray[i];
+        var point1 = faceArray[i+1];
+        var point2 = faceArray[i+2];
+
+        computeSingleTangentSpace(point0, point1, point2, i);
+    }
+}
+
+function computeSingleTangentSpace(p0, p1, p2, i) {
+    // vertices.
+    var x0 = vertexArray[p0*3];
+    var y0 = vertexArray[p0*3+1];
+    var z0 = vertexArray[p0*3+2];
+
+    var x1 = vertexArray[p1*3];
+    var y1 = vertexArray[p1*3+1];
+    var z1 = vertexArray[p1*3+2];
+
+    var x2 = vertexArray[p2*3];
+    var y2 = vertexArray[p2*3+1];
+    var z2 = vertexArray[p2*3+2];
+
+    var v1x = x1 - x0;
+    var v1y = y1 - y0;
+    var v1z = z1 - z0;
+
+    var v2x = x2 - x0;
+    var v2y = y2 - y0;
+    var v2z = z2 - z0;
+    //-------------------------------------
+
+    // texture coord.
+    var u0 = textureCoordArray[p0*2];
+    var v0 = textureCoordArray[p0*2+1];
+
+    var u1 = textureCoordArray[p1*2];
+    var v1 = textureCoordArray[p1*2+1];
+
+    var u2 = textureCoordArray[p2*2];
+    var v2 = textureCoordArray[p2*2+1];
+
+    var u1u = u1 - u0;
+    var u1v = v1 - v0;
+
+    var u2u = u2 - u0;
+    var u2v = v2 - v0;
+    //--------------------------------------
+
+    // determinant
+    var det = u1u * u2v - u2u * u1v;
+    //--------------------------------------
+
+    // tangent vectors
+    var tangent_x = (v1x * u2v - v2x * u1v) / det;
+    var tangent_y = (v1y * u2v - v2y * u1v) / det;
+    var tangent_z = (v1z * u2v - v2z * u1v) / det;
+
+    _tangentArray[i*3] = tangent_x;
+    _tangentArray[i*3+1] = tangent_y;
+    _tangentArray[i*3+2] = tangent_z;
+
+    _tangentArray[i*3+3] = tangent_x;
+    _tangentArray[i*3+4] = tangent_y;
+    _tangentArray[i*3+5] = tangent_z;
+
+    _tangentArray[i*3+6] = tangent_x;
+    _tangentArray[i*3+7] = tangent_y;
+    _tangentArray[i*3+8] = tangent_z;
+    //-----------------------------------------
+
+    // bitangent vectors
+    var bitangent_x = (-v1x * u2u + v2x * u1u) / det;
+    var bitangent_y = (-v1y * u2u + v2y * u1u) / det;
+    var bitangent_z = (-v1z * u2u + v2z * u1u) / det;
+
+    _bitangentArray[i*3] = bitangent_x;
+    _bitangentArray[i*3+1] = bitangent_y;
+    _bitangentArray[i*3+2] = bitangent_z;
+
+    _bitangentArray[i*3+3] = bitangent_x;
+    _bitangentArray[i*3+4] = bitangent_y;
+    _bitangentArray[i*3+5] = bitangent_z;
+
+    _bitangentArray[i*3+6] = bitangent_x;
+    _bitangentArray[i*3+7] = bitangent_y;
+    _bitangentArray[i*3+8] = bitangent_z;
+    //-------------------------------------------
+
+    // normal vectors
+    var normal_x = bitangent_y * tangent_z - bitangent_z * tangent_y;
+    var normal_y = bitangent_z * tangent_x - bitangent_x * tangent_z;
+    var normal_z = bitangent_x * tangent_y - bitangent_y * tangent_x;
+
+    _normalArray[i*3] = normal_x;
+    _normalArray[i*3+1] = normal_y;
+    _normalArray[i*3+2] = normal_z;
+
+    _normalArray[i*3+3] = normal_x;
+    _normalArray[i*3+4] = normal_y;
+    _normalArray[i*3+5] = normal_z;
+
+    _normalArray[i*3+6] = normal_x;
+    _normalArray[i*3+7] = normal_y;
+    _normalArray[i*3+8] = normal_z;
 }
 
 /**
@@ -310,21 +495,21 @@ function setupBuffers() {
  */
 function drawSphere(){
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, moonTexture);
+    gl.bindTexture(gl.TEXTURE_2D, sphereTexture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexPositionBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, moonVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, tVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, tVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexTextureCoordBuffer);
-    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, moonVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, tVertexTextureCoordBuffer);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, tVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexNormalBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, moonVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, tVertexNormalBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, tVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, moonVertexIndexBuffer);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tVertexIndexBuffer);
     setMatrixUniforms();
-    gl.drawElements(gl.TRIANGLES, moonVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, tVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 }
 
 /**
@@ -348,6 +533,7 @@ function draw() {
     mat4.rotateY(mvMatrix, mvMatrix, modelYRotationRadians);
     setMatrixUniforms();
     drawSphere();
+    uploadLightsToShader(lightDir, [0.8,0.8,0.8], [1.0,1.0,1.0], [1.0,1.0,1.0]);
     mvPopMatrix();
 }
 
