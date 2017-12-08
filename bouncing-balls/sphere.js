@@ -4,8 +4,6 @@ var canvas;
 var shaderProgram;
 var vertexPositionBuffer;
 
-var days=0;
-
 // Create a place to store sphere geometry
 var sphereVertexPositionBuffer;
 
@@ -13,7 +11,7 @@ var sphereVertexPositionBuffer;
 var sphereVertexNormalBuffer;
 
 // View parameters
-var eyePt = vec3.fromValues(0.0,0.0,10.0);
+var eyePt = vec3.fromValues(0.0,0.0,7.0);
 var viewDir = vec3.fromValues(0.0,0.0,-100.0);
 var up = vec3.fromValues(0.0,1.0,0.0);
 var viewPt = vec3.fromValues(0.0,0.0,0.0);
@@ -39,14 +37,14 @@ var radiusArray = [];
 var colorArray = [];
 
 // gravitational acceleration.
-const G = 0.01;
+const G = 0.03 * 0.5;
 // frictional coefficient.
-const F = 0.0001;
-// timer.
-var timer = 0.0;
+const F = Math.pow(0.99, 0.5);
 
-//-------------------------------------------------------------------------
-function setupSphereBuffers() {
+/**
+ * set up buffer for spheres.
+ */
+function setupBuffers() {
     var sphereSoup=[];
     var sphereNormals=[];
     var numT = sphereFromSubdivision(6, sphereSoup, sphereNormals);
@@ -69,7 +67,9 @@ function setupSphereBuffers() {
     console.log("Normals ", sphereNormals.length/3);
 }
 
-//-------------------------------------------------------------------------
+/**
+ * Draw a sphere based on buffers.
+ */
 function drawSphere() {
     gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, sphereVertexPositionBuffer.itemSize,
@@ -83,17 +83,23 @@ function drawSphere() {
     gl.drawArrays(gl.TRIANGLES, 0, sphereVertexPositionBuffer.numItems);
 }
 
-//-------------------------------------------------------------------------
+/**
+ * Sends Modelview matrix to shader
+ */
 function uploadModelViewMatrixToShader() {
     gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 }
 
-//-------------------------------------------------------------------------
+/**
+ * Sends projection matrix to shader
+ */
 function uploadProjectionMatrixToShader() {
     gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 }
 
-//-------------------------------------------------------------------------
+/**
+ * Generates and sends the normal matrix to the shader
+ */
 function uploadNormalMatrixToShader() {
     mat3.fromMat4(nMatrix,mvMatrix);
     mat3.transpose(nMatrix,nMatrix);
@@ -101,14 +107,18 @@ function uploadNormalMatrixToShader() {
     gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, nMatrix);
 }
 
-//----------------------------------------------------------------------------------
+/**
+ * Pushes matrix onto modelview matrix stack
+ */
 function mvPushMatrix() {
     var copy = mat4.clone(mvMatrix);
     mvMatrixStack.push(copy);
 }
 
 
-//----------------------------------------------------------------------------------
+/**
+ * Pops matrix off of modelview matrix stack
+ */
 function mvPopMatrix() {
     if (mvMatrixStack.length == 0) {
         throw "Invalid popMatrix!";
@@ -116,19 +126,29 @@ function mvPopMatrix() {
     mvMatrix = mvMatrixStack.pop();
 }
 
-//----------------------------------------------------------------------------------
+/**
+ * Sends projection/modelview matrices to shader
+ */
 function setMatrixUniforms() {
     uploadModelViewMatrixToShader();
     uploadNormalMatrixToShader();
     uploadProjectionMatrixToShader();
 }
 
-//----------------------------------------------------------------------------------
+/**
+ * Translates degrees to radians
+ * @param {Number} degrees Degree input to function
+ * @return {Number} The radians that correspond to the degree input
+ */
 function degToRad(degrees) {
     return degrees * Math.PI / 180;
 }
 
-//----------------------------------------------------------------------------------
+/**
+ * Creates a context for WebGL
+ * @param {element} canvas WebGL canvas
+ * @return {Object} WebGL context
+ */
 function createGLContext(canvas) {
     var names = ["webgl", "experimental-webgl"];
     var context = null;
@@ -149,7 +169,10 @@ function createGLContext(canvas) {
     return context;
 }
 
-//----------------------------------------------------------------------------------
+/**
+ * Loads Shaders
+ * @param {string} id ID string for shader to load. Either vertex shader/fragment shader
+ */
 function loadShaderFromDOM(id) {
     var shaderScript = document.getElementById(id);
 
@@ -189,7 +212,9 @@ function loadShaderFromDOM(id) {
     return shader;
 }
 
-//----------------------------------------------------------------------------------
+/**
+ * Setup the fragment and vertex shaders for spheres.
+ */
 function setupShaders() {
     vertexShader = loadShaderFromDOM("shader-vs");
     fragmentShader = loadShaderFromDOM("shader-fs");
@@ -225,7 +250,13 @@ function setupShaders() {
 }
 
 
-//-------------------------------------------------------------------------
+/**
+ * Sends light information to the shader
+ * @param {Float32Array} loc Location of light source
+ * @param {Float32Array} a Ambient light strength
+ * @param {Float32Array} d Diffuse light strength
+ * @param {Float32Array} s Specular light strength
+ */
 function uploadLightsToShader(loc,a,d,s) {
     gl.uniform3fv(shaderProgram.uniformLightPositionLoc, loc);
     gl.uniform3fv(shaderProgram.uniformAmbientLightColorLoc, a);
@@ -240,18 +271,13 @@ function uploadMaterialToShader(a,d,s) {
     gl.uniform3fv(shaderProgram.uniformSpecularMatColorLoc, s);
 }
 
-
-//----------------------------------------------------------------------------------
-function setupBuffers() {
-    setupSphereBuffers();
-}
-
-//----------------------------------------------------------------------------------
+/**
+ * Draw call that applies matrix transformations to spheres.
+ */
 function draw() {
-    timer += 0.001;
+    // listen to keyboard activities.
     keyListener();
-    var transformVec = vec3.create();
-
+    document.getElementById("numberOfBalls").innerHTML = positionArray.length / 3;
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -261,40 +287,57 @@ function draw() {
     // We want to look down -z, so create a lookat point in that direction
     vec3.add(viewPt, eyePt, viewDir);
     // Then generate the lookat matrix and initialize the MV matrix to that view
-    mat4.lookAt(mvMatrix,eyePt,viewPt,up);
+    mat4.lookAt(mvMatrix, eyePt, viewPt, up);
 
-    var lightPosEye4 = vec4.fromValues(0.0,50.0,50.0,1.0);
-    lightPosEye4 = vec4.transformMat4(lightPosEye4,lightPosEye4,mvMatrix);
+    var lightPosEye4 = vec4.fromValues(0.0, 50.0, 50.0, 1.0);
+    lightPosEye4 = vec4.transformMat4(lightPosEye4, lightPosEye4, mvMatrix);
     //console.log(vec4.str(lightPosEye4))
     var lightPosEye = vec3.fromValues(lightPosEye4[0], lightPosEye4[1], lightPosEye4[2]);
 
     // Set up light parameters
-    var Ia = vec3.fromValues(1.0,1.0,1.0);
-    var Id = vec3.fromValues(1.0,1.0,1.0);
-    var Is = vec3.fromValues(1.0,1.0,1.0);
+    var Ia = vec3.fromValues(1.0, 1.0, 1.0);
+    var Id = vec3.fromValues(1.0, 1.0, 1.0);
+    var Is = vec3.fromValues(1.0, 1.0, 1.0);
 
     for (var i = 0; i < positionArray.length; i+=3) {
         // Set up material parameters
-        var ka = vec3.fromValues(0.0,0.0,0.0);
-        var kd = vec3.fromValues(colorArray[i],colorArray[i+1],colorArray[i+2]);
-        var ks = vec3.fromValues(colorArray[i],colorArray[i+1],colorArray[i+2]);
+        var ka = vec3.fromValues(0.15, 0.15, 0.15);
+        var kd = vec3.fromValues(colorArray[i], colorArray[i+1], colorArray[i+2]);
+        var ks = vec3.fromValues(colorArray[i], colorArray[i+1], colorArray[i+2]);
 
         mvPushMatrix();
-        var transformVec, scaleVec;
+        var transformVec = vec3.create();
+        var scaleVec = vec3.create();
+
+        // set up the positions of shperes.
         vec3.set(transformVec, positionArray[i], positionArray[i+1], positionArray[i+2]);
         mat4.translate(mvMatrix, mvMatrix, transformVec);
 
+        // set up the size of spheres.
         scaleVec = vec3.fromValues(radiusArray[i], radiusArray[i+1], radiusArray[i+2]);
         mat4.scale(mvMatrix, mvMatrix, scaleVec);
 
         uploadLightsToShader(lightPosEye, Ia, Id, Is);
         uploadMaterialToShader(ka, kd, ks);
         setMatrixUniforms();
+
+        // draw sphere based on current positions.
         drawSphere();
 
-        positionArray[i+0] += velocityArray[i+0];
+        // keep the spheres moving based on velocity.
+        positionArray[i] += velocityArray[i];
         positionArray[i+1] += velocityArray[i+1];
         positionArray[i+2] += velocityArray[i+2];
+        //---------------------------------------------------------------
+
+        // eliminate the edges of the box.
+        if (positionArray[i] - radiusArray[i] <= -2.0) {
+            positionArray[i] = radiusArray[i]-2.0;
+            velocityArray[i] = -velocityArray[i];
+        } else if (positionArray[i] + radiusArray[i] >= 2.0) {
+            positionArray[i] = 2.0 - radiusArray[i];
+            velocityArray[i] = -velocityArray[i];
+        }
 
         if (positionArray[i+1] - radiusArray[i+1] <= -2.0) {
             positionArray[i+1] = radiusArray[i+1]-2.0;
@@ -304,14 +347,6 @@ function draw() {
             velocityArray[i+1] = -velocityArray[i+1];
         }
 
-        if (positionArray[i] - radiusArray[i] <= -2.0) {
-            positionArray[i] = radiusArray[i]-2.0;
-            velocityArray[i] = -velocityArray[i];
-        } else if (positionArray[i] + radiusArray[i] >= 2.0) {
-            positionArray[i] = 2.0 - radiusArray[i];
-            velocityArray[i] = -velocityArray[i];
-        }
-
         if (positionArray[i+2] - radiusArray[i+2] <= -2.0) {
             positionArray[i+2] = radiusArray[i+2]-2.0;
             velocityArray[i+2] = -velocityArray[i+2];
@@ -319,24 +354,27 @@ function draw() {
             positionArray[i+2] = 2.0 - radiusArray[i+2];
             velocityArray[i+2] = -velocityArray[i+2];
         }
+        //-----------------------------------------------------------
 
-        if (velocityArray[i+1] > 0) {
-            velocityArray[i+1] -= G;
-            velocityArray[i+1] -= F;
-        } else if (velocityArray[i+1] < 0) {
-            velocityArray[i+1] -= G;
-            velocityArray[i+1] += F;
+        // implemnet the gravitational acceleration and frictional effects.
+        if (velocityArray[i] > 0.0) {
+            velocityArray[i] *= F;
+        } else if (velocityArray[i] < 0.0) {
+            velocityArray[i] *= F;
         }
 
-        if (velocityArray[i] > 0) {
-            velocityArray[i] -= F;
-        } else if (velocityArray[i] < 0) {
-            velocityArray[i] += F;
+        if (velocityArray[i+1] > 0.0) {
+            velocityArray[i+1] -= G;
+            velocityArray[i+1] *= F;
+        } else if (velocityArray[i+1] < 0.0) {
+            velocityArray[i+1] -= G;
+            velocityArray[i+1] *= F;
         }
-        if (velocityArray[i+2] > 0) {
-            velocityArray[i+2] -= F;
-        } else if (velocityArray[i+2] < 0) {
-            velocityArray[i+2] += F;
+
+        if (velocityArray[i+2] > 0.0) {
+            velocityArray[i+2] *= F;
+        } else if (velocityArray[i+2] < 0.0) {
+            velocityArray[i+2] *= F;
         }
 
         mvPopMatrix();
@@ -347,7 +385,6 @@ function draw() {
  * Listen the key press to do the rotation.
  */
 function keyListener() {
-    var velocityRange = 0.1;
     window.addEventListener("keydown", function (event) {
         if (event.defaultPrevented) {
             return; // Do nothing if the event was already processed
@@ -356,37 +393,20 @@ function keyListener() {
         switch (event.key) {
             // add a ball.
             case "a":
-            // init position array.
-            positionArray.push(Math.random()*2.0-1.0);
-            positionArray.push(Math.random()*0.5+0.5);
-            positionArray.push(Math.random()*2.0-1.0);
+            initBall();
+            break;
 
-            //init velocity array.
-            var initSpeedX = (Math.random()-0.5)*velocityRange;
-            var initSpeedY = (Math.random()-0.5)*velocityRange;
-            var initSpeedZ = (Math.random()-0.5)*velocityRange;
-            velocityArray.push(initSpeedX);
-            velocityArray.push(initSpeedY);
-            velocityArray.push(initSpeedZ);
-
-            // init radius array.
-            var randomRadius = Math.random()/3.0+0.3;
-            radiusArray.push(randomRadius);
-            radiusArray.push(randomRadius);
-            radiusArray.push(randomRadius);
-
-            // init color array.
-            colorArray.push(Math.random());
-            colorArray.push(Math.random());
-            colorArray.push(Math.random());
+            case "A":
+            initBall();
             break;
 
             // press "d" to remove all the spheres.
             case "d":
-            positionArray = [];
-            velocityArray = [];
-            radiusArray = [];
-            colorArray = [];
+            resetBalls();
+            break;
+
+            case "D":
+            resetBalls();
             break;
 
 
@@ -399,19 +419,63 @@ function keyListener() {
     }, true);
 }
 
+/**
+ * initialize a new ball.
+ */
+function initBall() {
+    var velocityRange = 0.1;
+    // init position array.
+    positionArray.push(Math.random()*2.0-1.0);
+    positionArray.push(Math.random()*0.5+0.5);
+    positionArray.push(Math.random()*2.0-1.0);
 
-//----------------------------------------------------------------------------------
+    //init velocity array.
+    var initSpeedX = (Math.random()-0.5)*velocityRange;
+    var initSpeedY = (Math.random()-0.5)*velocityRange;
+    var initSpeedZ = (Math.random()-0.5)*velocityRange;
+    velocityArray.push(initSpeedX);
+    velocityArray.push(initSpeedY);
+    velocityArray.push(initSpeedZ);
+
+    // init radius array.
+    var randomRadius = Math.random()/3.0+0.2;
+    radiusArray.push(randomRadius);
+    radiusArray.push(randomRadius);
+    radiusArray.push(randomRadius);
+
+    // init color array.
+    colorArray.push(Math.random());
+    colorArray.push(Math.random());
+    colorArray.push(Math.random());
+}
+
+/**
+ * reset all the current ball(s).
+ */
+function resetBalls() {
+    positionArray = [];
+    velocityArray = [];
+    radiusArray = [];
+    colorArray = [];
+}
+
+
+/**
+ * Startup function called from html code to start program.
+ */
 function startup() {
     canvas = document.getElementById("myGLCanvas");
     gl = createGLContext(canvas);
     setupShaders();
     setupBuffers();
-    gl.clearColor(0.0, 1.0, 1.0, 1.0);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
     tick();
 }
 
-//----------------------------------------------------------------------------------
+/**
+ * Tick called for every animation frame.
+ */
 function tick() {
     requestAnimFrame(tick);
     draw();
