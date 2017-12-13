@@ -292,7 +292,7 @@ function handleTextureLoaded(texture) {
  * Populate buffers with data
  */
 function setupBuffers() {
-    num = sphereFromSubdivision(6, vertexArray, normalArray);
+    num = sphereFromSubdivision(9, vertexArray, normalArray);
     console.log("I have generated", num, "triangles to form this sphere.")
 
     // get texture coordinate.
