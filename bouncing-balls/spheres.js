@@ -38,23 +38,26 @@ var colorArray = [];
 
 // gravitational acceleration.
 const G = 0.03 * 0.5;
+
 // frictional coefficient.
-const F = Math.pow(0.99, 0.5);
+const F = Math.pow(0.98, 0.5);
 
 /**
  * set up buffer for spheres.
  */
 function setupBuffers() {
-    var sphereSoup=[];
-    var sphereNormals=[];
-    var numT = sphereFromSubdivision(6, sphereSoup, sphereNormals);
+
+    var sphereVertices = [];
+    var sphereNormals = [];
+    var numT = sphereFromSubdivision(6, sphereVertices, sphereNormals);
     console.log("Generated ", numT, " triangles");
+
     sphereVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sphereSoup), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sphereVertices), gl.STATIC_DRAW);
     sphereVertexPositionBuffer.itemSize = 3;
-    sphereVertexPositionBuffer.numItems = numT*3;
-    console.log(sphereSoup.length/9);
+    sphereVertexPositionBuffer.numItems = numT * 3;
+    console.log(sphereVertices.length / 9);
 
     // Specify normals to be able to do lighting calculations
     sphereVertexNormalBuffer = gl.createBuffer();

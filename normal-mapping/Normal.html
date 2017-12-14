@@ -30,7 +30,7 @@ void main(void) {
     vec3 tangent = normalize(vec3(uNMatrix * vec4(aVertexTangent,1.0)));
     vec3 bitangent = normalize(vec3(uNMatrix * vec4(aVertexBitangent, 1.0)));
 
-    // tangent-bitangent-normal matrix.
+    //tangent-bitangent-normal matrix.
     mat3 tbnMatrix = mat3(
         tangent.x, bitangent.x, normal.x,
         tangent.y, bitangent.y, normal.y,
