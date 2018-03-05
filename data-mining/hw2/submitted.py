@@ -1,14 +1,15 @@
 import sys
 import itertools as its
 
+inputlines = []
+biglist = [] # the well-splited list
+bigcharlist = []
+chardict = dict()
 myWrite = sys.stdout.write
 
-myFile = open('input.txt', 'r')
-biglist = [] # the well-splited list
-charlist = []
-bigcharlist = []
-
-inputlines = myFile.read().splitlines()
+for line in sys.stdin:
+    line = line.replace('\n','')
+    inputlines.append(line)
 
 partition = int(inputlines[0])
 inputlines = inputlines[1:]
@@ -26,10 +27,9 @@ for i in range(partition):
 
     biglist.append(sublist)
 
-
 '''consider the partitions'''
 for part in biglist:
-    chardict = {}
+    charlist = []
     '''different lengths for combination'''
     for combi in range(len(part[0])):
         # get the list for one item to all items
@@ -59,13 +59,11 @@ for part in biglist:
                 else:
                     charlist.append(chara)
                     chardict[chara] = 1
-                    # print(chara)
-    bigcharlist.append(chardict)
+
+    bigcharlist.append(charlist)
 
 for i in range(len(bigcharlist)):
-    for key, value in bigcharlist[i].items():
-        myWrite(key + ': ' + str(value) + '\n')
+    for item in bigcharlist[i]:
+        myWrite(item + ': ' + str(chardict[item]) + '\n')
     if i != len(bigcharlist) - 1:
         myWrite('\n')
-
-myFile.close()
