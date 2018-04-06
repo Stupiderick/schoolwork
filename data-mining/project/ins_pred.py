@@ -1,5 +1,3 @@
-'''collabrated with Yuyun Li'''
-
 from sklearn import multiclass, svm
 import numpy as np
 import pandas as pd
@@ -72,6 +70,7 @@ print('training data', X_train)
 a = pd.isnull(X_train)
 b = np.sum(a)
 
+# calculating testing set
 y_train = data[:,-1].astype('int')
 
 data2 = pd.read_csv('testing.csv')
@@ -96,7 +95,6 @@ for j in range(X_test.shape[1]):
 
 print('testing data', X_test)
 
-
 y_pred_train, y_pred_test = sklearn_multiclass_prediction(
             'ovr', X_train, y_train, X_test)
 
@@ -112,5 +110,16 @@ Title = np.array(['Id','Response'])
 Title = np.reshape(Title, (1,2))
 y = np.append(Title,y,axis=0)
 
+# output the result
 my_df = pd.DataFrame(y)
 my_df.to_csv('out.csv', index=False, header=False)
+
+# get error in the training set
+errorlist = y_train - y_pred_train
+unique, counts = np.unique(errorlist, return_counts=True)
+summation = float(np.sum(counts))
+freqs = []
+for i in range(len(counts)):
+    freqs.append(float(counts[i]) / summation)
+error_freq = dict(zip(unique, freqs))
+print('{error: freqencies}', error_freq)
