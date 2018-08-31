@@ -1,0 +1,25 @@
+### ch1-p1
+
+#include <unistd.h>
+
+int main() {
+	write(1, "Hi! My name is Erick Li.\n", 25);
+	return 0;
+}
+
+
+### ch1-p2
+
+void write_triangle(int n) {
+	int count;
+	for(count = 0; count < n; count++) {
+		int i;
+		for(i = 0; i <= count; i++) {
+			write(2, "*", 1);
+		}
+		write(2, "\n", 1);
+	}
+}
+
+## ch1-p3
+
