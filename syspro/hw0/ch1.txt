@@ -1,0 +1,59 @@
+### ch1-p1
+
+#include <unistd.h>
+
+int main() {
+    write(1, "Hi! My name is Erick Li.\n", 25);
+    return 0;
+}
+
+
+### ch1-p2
+
+void write_triangle(int n) {
+    int count;
+    for(count = 0; count < n; count++) {
+	int i;
+	for(i = 0; i <= count; i++) {
+	    write(2, "*", 1);
+	}
+	    write(2, "\n", 1);
+    }
+}
+
+## ch1-p3
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int main() {
+    mode_t mode = S_IRUSR | S_IWUSR;
+    int myfile = open("hello_world.txt", O_CREAT | O_TRUNC | O_RDWR, mode);
+    write(myfile, "Hi! My name is Erick Li.\n", 25);
+    close(myfile);
+    return 0;
+}
+
+
+### ch1-p4
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+
+int main() {
+    mode_t mode = S_IRUSR | S_IWUSR;
+    close(1);
+    int myfile = open("hello_world.txt", O_CREAT | O_TRUNC | O_RDWR, mode);
+    printf("Hi! My name is Erick Li.\n");
+    close(myfile);
+    return 0;
+}
+
+
+### ch1-p5
+write() is a system call. However, printf() is not a system call, but it calls write().
+
+
