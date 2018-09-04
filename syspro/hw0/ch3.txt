@@ -1,0 +1,16 @@
+### ch3-p1
+1. use argc
+2. use sizeof()
+
+### ch3-p2
+argv[0] represents the name of the program.
+
+### ch3-p3
+They are stored above the stack
+
+### ch3-p4
+sizeof(ptr) is 8 (4 on 32-bit machine), because ptr stores the address of the first char of the array
+sizeof(array) is 6, because sizeof an array gets the length of the array plus newline..
+
+### ch3-p5
+On stack
