@@ -3,3 +3,18 @@ we can use getchar() and putchar()
 
 ### ch5-p2
 if the input size is larger than the buffer, gets() may corrupt the other variables.
+
+
+### ch5-p3
+#include <stdio.h>
+
+int main()
+{
+    char ch1[10], ch2[10];
+    int num;
+
+    char * ch = "hello 3 world";
+    sscanf(ch, "%s %d %s", ch1, &num, ch2);
+
+    return 0;
+}
