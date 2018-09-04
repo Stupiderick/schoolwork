@@ -1,0 +1,5 @@
+### ch5-p1
+we can use getchar() and putchar()
+
+### ch5-p2
+if the input size is larger than the buffer, gets() may corrupt the other variables.
