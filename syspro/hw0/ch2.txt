@@ -5,14 +5,14 @@
 char: 1 byte
 
 ### ch2-p3
-int: 2 bytes
+int: 2 or 4 bytes
 double: 8 bytes
 float: 4 bytes
 long: 4 bytes
 long long: 8 bytes
 
 ### ch2-p4
-0x7fbd9d48
+0x7fbd9d50
 
 ### ch2-p5
 *(data+3)
@@ -31,4 +31,4 @@ Because the 2nd line is trying to modify a string which is immutable in C.
 "IL"
 
 ### ch2-p5
-2,147,000,000 (long type)
+ptr

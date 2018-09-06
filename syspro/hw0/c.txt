@@ -1,0 +1,25 @@
+### p1
+-g
+
+### p2
+You also need to make clean and then use -g flag to build the execution in debug mode
+
+### p3
+A tab is necessary in Makefile
+
+### p4
+git commit: commit changes of files to git
+sha: keeps metadata about the changes info like time and authors
+
+### p5
+it shows the git commit history and comments
+
+### p6
+it shows the working tree status
+
+### p7
+it updates remote refs along with associated objects. Just do git commit -m 'fixed all bugs' does not change the remote repo, but you have to do git push.
+
+### p8
+Sometimes, Git can't make your change to a remote repository without losing commits. When this happens, your push is refused. If another person has pushed to the same branch as you, Git won't be able to push your changes.
+Soln: by fetching and merging the changes made on the remote branch with the changes that you have made locally.

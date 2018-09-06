@@ -54,6 +54,6 @@ int main() {
 
 
 ### ch1-p5
-write() is a system call. However, printf() is not a system call, but it calls write().
+write() is a system call, and it is designed to only write a sequence of bytes. However, printf() is not a system call, but it calls write().
 
 

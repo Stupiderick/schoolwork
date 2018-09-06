@@ -1,14 +1,14 @@
 ### ch4-p1
-you can use malloc() or static variables
-e.g. int var = malloc(128)
-e.g. static int var = ??
+you can use return var or static variables
+e.g. return var, in the function
+e.g. static int var = ??; outside the function
 
 ### ch4-p2
 stack memory has a faster access speed, and it is allocated when the program is compiled;
 heap memory has a slower access speed, and it is allocated during the runtime of the program.
 
 ### ch4-p3
-nope
+kernel memory, text segment process
 
 ### ch4-p4
 "In a good C program, for every malloc, there is a free".
@@ -30,13 +30,13 @@ set the free'd pointer to NULL
 e.g. ptr = NULL;
 
 ### ch4-p10
+typedef struct Person person_t;
 struct Person {
     char * name;
     int age;
-    person_t ** s;
+    person_t ** friend;
 };
 
-typedef struct Person person_t;
 
 ### ch4-p11
 int main() {
@@ -46,8 +46,8 @@ int main() {
     sm->name = "Sonny Moore";
     as->age = 128;
     sm->age = 256;
-    as->s = &sm;
-    sm->s = &as;
+    as->friend = &sm;
+    sm->friend = &as;
     free(as);
     as = NULL;
     free(sm);
@@ -61,7 +61,7 @@ person_t * create(char * aName, int anAge) {
     person_t * res = (person_t*) malloc(sizeof(person_t));
     res->name = strdup(aName);
     res->age = anAge;
-    res->s = malloc(sizeof(person_t*) * 10);
+    res->friend = malloc(sizeof(person_t*) * 10);
 
     return res;
 }
@@ -70,7 +70,7 @@ person_t * create(char * aName, int anAge) {
 ### ch4-p13
 void destroy(person_t * p) {
     free(p->name);
-    free(p->s);
+    free(p->friend);
     memset(p, 0, sizeof(person_t));
     free(p);
 }

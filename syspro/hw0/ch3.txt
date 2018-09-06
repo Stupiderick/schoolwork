@@ -1,9 +1,9 @@
 ### ch3-p1
 1. use argc
-2. use sizeof()
+2. use sizeof(argv) / sizeof(argv[0]);
 
 ### ch3-p2
-argv[0] represents the name of the program.
+argv[0] represents the execution name.
 
 ### ch3-p3
 They are stored above the stack
