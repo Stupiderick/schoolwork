@@ -1,0 +1,421 @@
+Exam #3 score (zhiyuan5): 22/200
+
+=== Grade Feedback for Problem "programming_linkedlist_chooseMeal_1func" ===
+[6/6]: Test: Empty list returns NULL
+[4/4]: Test: List of 1 veggie meal returns NULL when requesting a meat meal
+[4/4]: Test: List of multiple veggie meals returns NULL when requesting a meat meal
+[4/4]: Test: List of 1 meat meals returns NULL when requesting a veggie meal
+[4/4]: Test: List of multiple meat meals returns NULL when requesting a veggie meal
+[0/4]: Test: Removing the only element in the list (reference check)
+[0/4]: Test: Removing from a one-element list (value check)
+     Message: SIGSEGV
+[0/20]: Test: Full exam-provided example (reference)
+[0/50]: Test: Full exam-provided example (value)
+=====
+[22/100]
+
+--- stdout ---
+g++ meal.cpp list.cpp eatery-test.cpp -std=c++1y -lpng -lpthread -g -o eatery-test
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+eatery-test is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+Removing the only element in the list (reference check)
+-------------------------------------------------------------------------------
+eatery-test.cpp:86
+...............................................................................
+
+eatery-test.cpp:96: FAILED:
+  CHECK( m == m1 )
+with expansion:
+  NULL == 0x000000000075fc30
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 2 | 1 passed | 1 failed
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+eatery-test is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+Removing from a one-element list (value check)
+-------------------------------------------------------------------------------
+eatery-test.cpp:102
+...............................................................................
+
+eatery-test.cpp:102: FAILED:
+due to a fatal error condition:
+  SIGSEGV - Segmentation violation signal
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 1 | 1 failed
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+eatery-test is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+Full exam-provided example (reference)
+-------------------------------------------------------------------------------
+eatery-test.cpp:120
+...............................................................................
+
+eatery-test.cpp:142: FAILED:
+  CHECK( m == __null )
+with expansion:
+  0x0000000001e072f0 == 0
+
+eatery-test.cpp:148: FAILED:
+  CHECK( m == __null )
+with expansion:
+  0x0000000001e06c30 == 0
+
+eatery-test.cpp:151: FAILED:
+  CHECK( m == m3 )
+with expansion:
+  0x0000000001e05cd0 == 0x0000000001e08790
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 6 | 3 passed | 3 failed
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+eatery-test is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+Full exam-provided example (value)
+-------------------------------------------------------------------------------
+eatery-test.cpp:155
+...............................................................................
+
+eatery-test.cpp:181: FAILED:
+  CHECK( m == __null )
+with expansion:
+  0x0000000001ebf2f0 == 0
+
+eatery-test.cpp:189: FAILED:
+  CHECK( m == __null )
+with expansion:
+  0x0000000001ebec30 == 0
+
+===============================================================================
+test cases:  1 | 1 failed
+assertions: 10 | 8 passed | 2 failed
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+eatery-test is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+Removing the only element in the list (reference check)
+-------------------------------------------------------------------------------
+eatery-test.cpp:86
+...............................................................................
+
+eatery-test.cpp:96: FAILED:
+  CHECK( m == m1 )
+with expansion:
+  NULL == 0x00000000014aa080
+
+-------------------------------------------------------------------------------
+Removing from a one-element list (value check)
+-------------------------------------------------------------------------------
+eatery-test.cpp:102
+...............................................................................
+
+eatery-test.cpp:102: FAILED:
+due to a fatal error condition:
+  SIGSEGV - Segmentation violation signal
+
+===============================================================================
+test cases: 7 | 5 passed | 2 failed
+assertions: 8 | 6 passed | 2 failed
+
+
+
+--- stderr ---
+
+
+--- submitted file: list.cpp ---
+#define _LIST_CPP
+#include "list.h"
+#include "meal.h"
+
+#include <cstddef>
+
+#include <iostream>
+using namespace std;
+
+
+//
+// In the `List` class, complete the `chooseMeal` member function in `list.cpp`.
+// The `grabFood` function must:
+//
+// 1. find the meal closest to the head of the list that meets the given
+//    preferences (if a suitable meal exists),
+// 2. remove the node containing the meal from the list, and
+// 3. return a pointer to the meal (if a suitable meal was found) **or** `NULL` if no meal was found
+//
+
+template <class T>
+const Meal *List<T>::chooseMeal(bool requireMeat, bool requireVegetables) {
+  ListNode * temp = head;
+
+  if (!requireMeat && !requireVegetables) {
+    return NULL;
+  }
+
+  while (temp != NULL) {
+    if (requireMeat && !requireVegetables) {
+      if (temp->data->containsMeat() && !(temp->data->containsVegetables())) {
+        return (temp->data);
+      }
+
+    }
+
+    if (!requireMeat && requireVegetables) {
+      if (!(temp->data->containsMeat()) && temp->data->containsVegetables()) {
+        return (temp->data);
+      }
+    }
+
+    if (requireMeat && requireVegetables) {
+      if ((temp->data->containsMeat()) && (temp->data->containsVegetables())) {
+        return (temp->data);
+      }
+    }
+
+    temp = temp->next;
+  }
+
+  return NULL;
+}
+
+
+
+
+template <class T>
+List<T>::List() {
+  this->head = NULL;
+}
+
+template <class T>
+void List<T>::insertFront(const T& ndata) {
+  ListNode* node = new ListNode(ndata);
+  node->next = head;
+  this->head = node;
+}
+
+
+=== Grade Feedback for Problem "programming_linkedlist_gameNight_leaders4_start" ===
+[0/30]: Test: List of six people (by ref)
+     Message: SIGSEGV
+[0/70]: Test: List of six people (by value)
+     Message: SIGSEGV
+=====
+[0/100]
+
+--- stdout ---
+g++ gameNight-test.cpp list-p2.cpp person.cpp -std=c++1y -lpng -lpthread -g -o gameNight-test
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gameNight-test is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+List of six people (by ref)
+-------------------------------------------------------------------------------
+gameNight-test.cpp:26
+...............................................................................
+
+gameNight-test.cpp:16: FAILED:
+  CHECK( p == expected )
+with expansion:
+  0x00007ffec0f56430 == 0x00007ffec0f56470
+with message:
+  [2]: Faythe; expected: Bob
+
+gameNight-test.cpp:26: FAILED:
+  {Unknown expression after the reported line}
+due to a fatal error condition:
+  SIGSEGV - Segmentation violation signal
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 4 | 2 passed | 2 failed
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gameNight-test is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+List of six people (by value)
+-------------------------------------------------------------------------------
+gameNight-test.cpp:54
+...............................................................................
+
+gameNight-test.cpp:22: FAILED:
+  CHECK( p->getName() == expected->getName() )
+with expansion:
+  "Faythe" == "Bob"
+with message:
+  [2]: Faythe; expected: Bob
+
+gameNight-test.cpp:54: FAILED:
+  {Unknown expression after the reported line}
+due to a fatal error condition:
+  SIGSEGV - Segmentation violation signal
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 4 | 2 passed | 2 failed
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gameNight-test is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+List of six people (by ref)
+-------------------------------------------------------------------------------
+gameNight-test.cpp:26
+...............................................................................
+
+gameNight-test.cpp:16: FAILED:
+  CHECK( p == expected )
+with expansion:
+  0x00007ffe64d55dc0 == 0x00007ffe64d55e00
+with message:
+  [2]: Faythe; expected: Bob
+
+gameNight-test.cpp:26: FAILED:
+  {Unknown expression after the reported line}
+due to a fatal error condition:
+  SIGSEGV - Segmentation violation signal
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 4 | 2 passed | 2 failed
+
+
+
+--- stderr ---
+
+
+--- submitted file: list-p2.cpp ---
+#define _LIST_CPP
+#include "list.h"
+#include "person.h"
+
+#include <cstddef>
+
+
+//
+// In the `List` class, complete the `reorganizeList` member function in
+// `list.cpp`.  The `reorganizeList` function must place all leaders at the
+// front of the list followed by all non-leaders, while otherwise maintain
+// the same order.
+//
+
+template <class T>
+void List<T>::reorganizeList() {
+  ListNode * temp = head;
+  ListNode * prev = temp;
+  int count = 0;
+
+  while (temp != NULL) {
+
+    count++;
+
+    if (!temp->leader) {
+      temp = temp->next;
+
+      if (prev != head) {
+        prev = prev->next;
+      }
+
+    } else {
+      if (temp != head) {
+        prev->next = temp->next;
+        ListNode * tempTemp = temp;
+        temp = temp->next;
+
+        ListNode * finding = head;
+
+        for (int i = 0; i < (count - 1) / 4 - 1; i++) {
+          finding = finding->next;
+        }
+
+        tempTemp->next = finding->next;
+        finding->next = tempTemp;
+        //cout<<"h"<<endl;
+
+      } else {
+        temp = temp->next;
+
+        if (prev != head) {
+          prev = prev->next;
+        }
+      }
+    }
+  }
+}
+
+
+
+template <class T>
+List<T>::List() {
+  this->head = NULL;
+}
+
+template <class T>
+void List<T>::insertBack(const T& ndata) {
+  static int ct = 0;
+
+  ListNode* node = new ListNode(ndata);
+  node->leader = (ct++ % 4 == 0);
+
+  if (!head) {
+    head = node;
+  } else {
+    ListNode *thru = head;
+    while (thru->next != NULL) { thru = thru->next; }
+    thru->next = node;
+  }
+}
+
+template <class T>
+const T *List<T>::get(int index) const {
+  ListNode *thru = head;
+  while (thru && index-- > 0) { thru = thru->next; }
+
+  if (thru) { return &(thru->data); }
+  else      { return NULL; }
+}
+
+

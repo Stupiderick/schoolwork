@@ -1,0 +1,48 @@
+Grading r23978 by zhiyuan5 committed on Sat Feb 25 13:31:57 CST 2017
+Monad Autograder
+Testing mp4.1 at 2017-03-04 01:46:13
+
+"Most software today is very much like an Egyptian pyramid with millions of bricks piled on top of each other, with no structural integrity, but just done by brute force and thousands of slaves." ~ Alan Kay
+
+Setting up test environment...
+Compiling...
+================================================================
+
+
+Running tests...
+================================================================
+testStackPushPeek  . . . . . . . [4 pts] - passed
+testStackPushPop . . . . . . . . [4 pts] - passed
+testStackManyPushesPeek  . . . . [4 pts] - passed
+testStackManyPushesTwoPops . . . [3 pts] - passed
+testStackManyOperations  . . . . [3 pts] - passed
+testStackDuplicateElements . . . [2 pts] - passed
+testQueueEnqueuePeek . . . . . . [2 pts] - passed
+testQueueEnqueueDequeue  . . . . [4 pts] - passed
+testQueueManyEnqueuesPeek  . . . [4 pts] - passed
+testQueueManyEnqueuesTwoDequeues [3 pts] - passed
+testQueueManyOperations  . . . . [3 pts] - passed
+stack_peek_1 . . . . . . . . . . [2 pts] - passed
+stack_pop_peek_1 . . . . . . . . [2 pts] - passed
+stack_pop_2  . . . . . . . . . . [4 pts] - passed
+stack_isEmpty_1  . . . . . . . . [4 pts] - passed
+stack_isEmpty_2  . . . . . . . . [4 pts] - passed
+stack_push_pop_isEmpty . . . . . [4 pts] - passed
+stack_push_and_pop . . . . . . . [4 pts] - passed
+queue_peek_1 . . . . . . . . . . [2 pts] - passed
+queue_dequeue_peek_1 . . . . . . [4 pts] - passed
+queue_dequeue_2  . . . . . . . . [4 pts] - passed
+queue_isEmpty_1  . . . . . . . . [4 pts] - passed
+queue_isEmpty_2  . . . . . . . . [4 pts] - passed
+queue_enqueue_dequeue_isEmpty  . [4 pts] - passed
+queue_enqueue_and_dequeue  . . . [4 pts] - passed
+testThroughStackQueue  . . . . . [4 pts] - passed
+testEnqueueConstantTime  . . . . [3 pts] - passed
+testDequeueConstantTime  . . . . [3 pts] - passed
+testEnqueuePeekDequeueTime . . . [4 pts] - passed
+
+
+Total score...
+================================================================
+TOTAL SCORE: 100
+

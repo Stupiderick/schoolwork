@@ -1,0 +1,410 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<style>
+tr.total {
+  border-top: solid 2px black;
+  font-weight: bold;
+}
+tr.total td:first-child {
+  text-align: right;
+}
+li.L0, li.L1, li.L2, li.L3, li.L5, li.L6, li.L7, li.L8 {
+  list-style-type: decimal !important;
+}
+pre {
+  font-size: 0.75rem;
+}
+h5 {
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h3>zhiyuan5's feedback report for exam2</h3>
+<hr>
+<h4>Summary and Overall Grade</h4>
+<table class="table table-sm" style="width: auto;">
+  <thead>
+    <tr>
+      <th>Problem Name</th>
+      <th colspan="4">Score</th>
+    </tr>
+  </head>
+  <tbody>
+    <tr>
+      <td>Garden Constructor</td>
+      <td style="text-align: right;">0</td>
+      <td>/</td>
+      <td style="text-align: right;">100</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Adding Backpacks</td>
+      <td style="text-align: right;">100</td>
+      <td>/</td>
+      <td style="text-align: right;">100</td>
+      <td></td>
+    </tr>
+    <tr class="total">
+      <td>Total:</td>
+      <td style="text-align: right;">100</td>
+      <td>/</td>
+      <td style="text-align: right;">200</td>
+      <td>50.00%</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+
+  <h4>&quot;Garden Constructor&quot; Feedback</h4>
+
+  <h5>Question Text</h5>
+  <div style="border: solid 1px black; padding: 10px;">
+    <h7 id="thesetup">The Setup</h7>
+<p>Consider a <code>garden</code> class that helps manage a garden of flowers (each flower
+is an instance of a <code>flower</code> class).  The <code>garden</code> class stores the flowers
+in a 4x4 grid (private variable <code>flower ** grid</code>).</p>
+<h7 id="theproblem">The Problem</h7>
+<p>In the class <code>garden</code>, create a constructor which takes one parameter,
+an array of flowers (<code>flower *</code>).  This constructor must:</p>
+<ul>
+<li>Allocate memory on the heap for <code>grid</code> to store the flower in a 4x4 grid.</li>
+<li>Store each <code>flower</code> in one position of the <code>grid</code> (there is no requirement on
+the position of each flower on the 4x4 grid, except that each flower must be
+in exactly one spot).</li>
+</ul>
+<p>You should assume that the input array will always contain exactly 16 flowers
+(one for each position).  You need only to write the constructor (you do not
+need to write all of the "big three").</p>
+<p>Your code must compile and work <em>without</em> modifying
+any of the other helper functions defined in the class (however, feel free
+to call them in your code!).</p>
+<h7 id="compileandtest">Compile and Test</h7>
+<p>A complete Makefile and tester code is provided for you.  To compile and test,
+run:</p>
+<pre><code>make
+./garden-test
+</code></pre>
+  </div>
+
+  <h5>File Submissions</h5>
+    <div>
+      garden.cpp
+    </div>
+    <div>
+      <pre class="prettyprint linenums">/* [zhiyuan5] submission on PL at 2017-02-14T19:48:04-06*/
+#include &quot;flower.h&quot;
+#include &quot;garden.h&quot;
+
+garden::garden(flower * arr) {
+  grid &#x3D; new flower * (arr);
+  for (int i &#x3D; 0; i &lt; 4; i++) {
+    arr &#x3D; new flower[4];
+  }
+}
+
+flower garden::getFlower(int row, int column) const {
+  return this-&gt;grid[row][column];
+}
+
+void garden::setFlower(int row, int column, const flower &amp;f) {
+  this-&gt;grid[row][column] &#x3D; f;
+}
+</pre>
+    </div>
+    <div>
+      garden.h
+    </div>
+    <div>
+      <pre class="prettyprint linenums">/* [zhiyuan5] submission on PL at 2017-02-14T19:48:04-06*/
+#ifndef _GARDEN_H
+#define _GARDEN_H
+
+#include &quot;flower.h&quot;
+
+class garden {
+public:
+  garden(flower * arr);
+  flower getFlower(int row, int column) const;
+  void setFlower(int row, int column, const flower &amp;f);
+
+private:
+  flower **grid;
+};
+
+#endif
+</pre>
+    </div>
+
+  <h5>Results of Tests</h5>
+  <table class="table table-sm" style="width: auto;">
+    <thead>
+      <tr>
+        <th>Problem Name</th>
+        <th colspan="3">Score</th>
+      </tr>
+    </head>
+    <tbody>
+      <tr>
+        <td>initialize garden (ctor)</td>
+        <td style="text-align: right;">0</td>
+        <td>/</td>
+        <td style="text-align: right;">100</td>
+      </tr>
+      <tr class="total">
+        <td>Total:</td>
+        <td style="text-align: right;">0</td>
+        <td>/</td>
+        <td style="text-align: right;">100</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h5>Raw Output</h5>
+  <div>
+    <div>stdout</div>
+    <pre style="border: solid 1px black";>g++ flower.cpp -std&#x3D;c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ garden.cpp -std&#x3D;c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ garden-test.cpp -std&#x3D;c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ flower.o garden.o garden-test.o -std&#x3D;c++1y -lpng -lpthread -o garden-test
+Match @0
+Match @1
+Match @2
+Match @3
+garden-test.cpp:61: failed: g &#x3D;&#x3D; flowers for: {?} &#x3D;&#x3D; 0x0000000000683ee0
+Failed 1 test case, failed 1 assertion.
+
+Match @0
+Match @1
+Match @2
+Match @3
+garden-test.cpp:59: failed: fatal error condition with message: &#x27;SIGSEGV - Segmentation violation signal&#x27;
+Failed 1 test case, failed 1 assertion.
+
+</pre>
+  </div>
+  <div>
+    <div>stderr</div>
+    <pre style="border: solid 1px black";></pre>
+  </div>
+  <hr>
+  <h4>&quot;Adding Backpacks&quot; Feedback</h4>
+
+  <h5>Question Text</h5>
+  <div style="border: solid 1px black; padding: 10px;">
+    <h7 id="thesetup">The Setup</h7>
+<p>Consider a <code>backpack</code> class that holds up to a fixed number of items.  The
+<code>backpack</code> class has three private variables:</p>
+<ul>
+<li><code>int size</code>, the maximum number of items that fits in the backpack.</li>
+<li><code>int items</code>, the current number of items in the backpack.  There must never
+be more items in the backpack than the size of the backpack (<code>items &lt;= size</code>).</li>
+<li><code>int *item_weights</code>, an array of the weights of the items currently in
+the backpack.  The length of the array will always be at least <code>items</code> length.</li>
+</ul>
+<h7 id="theproblem">The Problem</h7>
+<p>In the <code>backpack</code> class, overload the <code>+</code> (plus) operator to add two <code>backpack</code>
+classes.</p>
+<p>The result must be a <code>backpack</code> where:</p>
+<ul>
+<li>the result <code>size</code> is the sum of the <code>size</code> of each individual backpack, and</li>
+<li>the items (<code>items</code> and <code>item_weights</code>) in the result are the items from
+both backpacks</li>
+</ul>
+<p>Your code must compile and work <em>without</em> modifying any of the other helper
+functions defined in the class (however, feel free to call them in your code!).</p>
+<h7 id="compileandtest">Compile and Test</h7>
+<p>A complete Makefile and tester code is provided for you.  To compile and test,
+run:</p>
+<pre><code>make
+./backpack-test
+</code></pre>
+  </div>
+
+  <h5>File Submissions</h5>
+    <div>
+      backpack.cpp
+    </div>
+    <div>
+      <pre class="prettyprint linenums">/* [zhiyuan5] submission on PL at 2017-02-14T19:40:05-06*/
+#include &quot;backpack.h&quot;
+
+//
+// In the &#x60;backpack&#x60; class, overload the &#x60;+&#x60; (plus) operator to add two
+// &#x60;backpack&#x60; classes.
+//
+// The result must be a &#x60;backpack&#x60; where:
+// - the result &#x60;size&#x60; is the sum of the &#x60;size&#x60; of each individual backpack, and
+// - the items (&#x60;items&#x60; and &#x60;item_weights&#x60;) in the result are the items from
+//  both backpacks
+//
+
+backpack::backpack(int size) : size(size), items(0) {
+  this-&gt;item_weights &#x3D; new int[size];
+}
+
+backpack &amp; backpack::operator+(const backpack &amp; rhs) {
+    int count &#x3D; 0;
+    int itemsTemp &#x3D; items;
+   size &#x3D; size + rhs.size;
+   items &#x3D; items + rhs.items;
+   if (items &gt; size) {
+     items &#x3D; size;
+   }
+   int * temp &#x3D; new int[items];
+
+   for (int i &#x3D; 0; i &lt; rhs.items; i++) {
+     temp[i] &#x3D; rhs.item_weights[i];
+     count++;
+   }
+
+   for (int i &#x3D; 0; i &lt; itemsTemp; i++) {
+     temp[count] &#x3D; item_weights[i];
+     count++;
+   }
+
+   delete [] item_weights;
+   delete [] rhs.item_weights;
+   item_weights &#x3D; temp;
+}
+
+bool backpack::addItem(int weight) {
+  if (items &#x3D;&#x3D; size) {
+    // Cannot add if the backpack is full of items
+    return false;
+  } else {
+    // Otherwise, add the item
+    this-&gt;item_weights[this-&gt;items] &#x3D; weight;
+    this-&gt;items++;
+    return true;
+  }
+}
+
+int backpack::getSize() const {
+  return this-&gt;size;
+}
+
+int backpack::getItemCount() const {
+  return this-&gt;items;
+}
+
+const int *backpack::getItems() const {
+  return this-&gt;item_weights;
+}
+</pre>
+    </div>
+    <div>
+      backpack.h
+    </div>
+    <div>
+      <pre class="prettyprint linenums">/* [zhiyuan5] submission on PL at 2017-02-14T19:40:05-06*/
+#ifndef _BACKPACK_H
+#define _BACKPACK_H
+
+//
+// In the &#x60;backpack&#x60; class, overload the &#x60;+&#x60; (plus) operator to add two
+// &#x60;backpack&#x60; classes.
+//
+// The result must be a &#x60;backpack&#x60; where:
+// - the result &#x60;size&#x60; is the sum of the &#x60;size&#x60; of each individual backpack, and
+// - the items (&#x60;items&#x60; and &#x60;item_weights&#x60;) in the result are the items from
+//  both backpacks
+//
+
+class backpack {
+public:
+  backpack(int size);
+  backpack &amp; operator+(const backpack &amp; rhs);
+  int getSize() const;
+  int getItemCount() const;
+  const int *getItems() const;
+  bool addItem(int weight);
+
+private:
+  int size;
+  int items;
+  int *item_weights;
+};
+
+#endif
+</pre>
+    </div>
+
+  <h5>Results of Tests</h5>
+  <table class="table table-sm" style="width: auto;">
+    <thead>
+      <tr>
+        <th>Problem Name</th>
+        <th colspan="3">Score</th>
+      </tr>
+    </head>
+    <tbody>
+      <tr>
+        <td>backpack member functions after adding backpacks</td>
+        <td style="text-align: right;">25</td>
+        <td>/</td>
+        <td style="text-align: right;">25</td>
+      </tr>
+      <tr>
+        <td>add an empty backpack to a backpack</td>
+        <td style="text-align: right;">25</td>
+        <td>/</td>
+        <td style="text-align: right;">25</td>
+      </tr>
+      <tr>
+        <td>add backpack to an empty backpack</td>
+        <td style="text-align: right;">25</td>
+        <td>/</td>
+        <td style="text-align: right;">25</td>
+      </tr>
+      <tr>
+        <td>add two full backpacks together</td>
+        <td style="text-align: right;">25</td>
+        <td>/</td>
+        <td style="text-align: right;">25</td>
+      </tr>
+      <tr class="total">
+        <td>Total:</td>
+        <td style="text-align: right;">100</td>
+        <td>/</td>
+        <td style="text-align: right;">100</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h5>Raw Output</h5>
+  <div>
+    <div>stdout</div>
+    <pre style="border: solid 1px black";>g++ backpack.cpp -std&#x3D;c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ backpack-test.cpp -std&#x3D;c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ backpack.o backpack-test.o -std&#x3D;c++1y -lpng -lpthread -o backpack-test
+Passed 1 test case with 3 assertions.
+
+Passed 1 test case with 3 assertions.
+
+Passed 1 test case with 3 assertions.
+
+Passed 1 test case with 3 assertions.
+
+Passed all 4 test cases with 12 assertions.
+
+</pre>
+  </div>
+  <div>
+    <div>stderr</div>
+    <pre style="border: solid 1px black";>backpack.cpp: In member function ‘backpack&amp; backpack::operator+(const backpack&amp;)’:
+backpack.cpp:41:1: warning: no return statement in function returning non-void [-Wreturn-type]
+ }
+ ^
+</pre>
+  </div>
+  <hr>
+</div>
+</body>
+</html>
+ 

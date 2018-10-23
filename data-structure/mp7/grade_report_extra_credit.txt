@@ -1,0 +1,24 @@
+Grading r45342 by zhiyuan5 committed on Sat Apr 15 11:17:45 CDT 2017
+Monad Autograder
+Testing mp7.1 at 2017-04-22 00:40:01
+
+"C makes it easy to shoot yourself in the foot. C++ makes it harder, but when you do, you blow away your whole leg!" ~ Bjarne Stroustrup
+
+Setting up test environment...
+Compiling...
+================================================================
+
+
+Running tests...
+================================================================
+addElements1 . . . . [20 pts] - passed
+addElements2 . . . . [20 pts] - passed
+testFindAndSetUnion1 [20 pts] - passed
+testFindAndSetUnion2 [20 pts] - passed
+testFindAndSetUnion3 [20 pts] - passed
+
+
+Total score...
+================================================================
+TOTAL SCORE: 100
+

@@ -1,0 +1,44 @@
+Grading r32669 by zhiyuan5 committed on Tue Mar 21 15:52:37 CDT 2017
+Monad Autograder
+Testing mp5.1 at 2017-03-28 01:20:02
+
+"Be careful about using the following code -- I've only proven that it works, I haven't tested it." ~ Donald Knuth
+
+Setting up test environment...
+Compiling...
+================================================================
+
+
+Running tests...
+================================================================
+test_default_ctor  . . . . [4 pts] - passed
+test_ctor_1  . . . . . . . [4 pts] - passed
+test_ctor_2  . . . . . . . [4 pts] - passed
+test_buildTree_1 . . . . . [4 pts] - passed
+test_buildTree_2 . . . . . [4 pts] - passed
+test_buildTree_3 . . . . . [4 pts] - passed
+test_cctor_1 . . . . . . . [2 pts] - passed
+test_cctor_2 . . . . . . . [2 pts] - passed
+test_cctor_3 . . . . . . . [2 pts] - passed
+test_cctor_4 . . . . . . . [4 pts] - passed
+test_assign_op_1 . . . . . [2 pts] - passed
+test_assign_op_2 . . . . . [2 pts] - passed
+test_assign_op_3 . . . . . [2 pts] - passed
+test_assign_op_4 . . . . . [4 pts] - passed
+test_getPixel_1  . . . . . [4 pts] - passed
+test_getPixel_2  . . . . . [4 pts] - passed
+test_getPixel_3  . . . . . [4 pts] - passed
+test_getPixel_4  . . . . . [4 pts] - passed
+test_decompress_unpruned_1 [4 pts] - passed
+test_decompress_unpruned_2 [4 pts] - passed
+test_decompress_unpruned_3 [6 pts] - passed
+test_decompress_unpruned_4 [6 pts] - passed
+time_getPixel_logn . . . . [6 pts] - FAILED
+time_decompress_n (asan) . [6 pts] - passed
+valgrind_big3 (asan) . . . [8 pts] - passed
+
+
+Total score...
+================================================================
+TOTAL SCORE: 94
+

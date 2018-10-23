@@ -1,0 +1,249 @@
+Exam #4 score (zhiyuan5): 200/200
+
+=== Grade Feedback for Problem "programming_binaryTree_traversal_countOccurrences" ===
+[10/10]: Test: Binary tree w/ three nodes
+[10/10]: Test: Binary tree w/ four nodes
+[20/20]: Test: Binary tree w/ five nodes
+[20/20]: Test: Binary tree w/ seven nodes
+[20/20]: Test: Binary tree w/ nine nodes
+[20/20]: Test: Binary tree w/ eleven nodes
+=====
+[100/100]
+
+--- stdout ---
+g++ main.cpp binarytree.cpp -std=c++1y -g -O0 -Wall -Wextra -pedantic -o binarytree-test
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+===============================================================================
+All tests passed (6 assertions in 6 test cases)
+
+
+
+--- stderr ---
+
+
+--- submitted file: binarytree.cpp ---
+#define _BINARYTREE_CPP
+#include "binarytree.h"
+#include <iostream>
+#include <cstdlib>
+
+using namespace std;
+
+
+template <typename T>
+int BinaryTree<T>::countOccurrences(const T& elem) {
+  return countOccurrences(root, elem, 0);
+}
+
+template <typename T>
+int BinaryTree<T>::countOccurrences(Node * cRoot, const T& elem, int counting) {
+  if (cRoot == NULL) {
+    return counting;
+  }
+
+  if (cRoot->elem == elem) {
+    counting++;
+  }
+
+  counting = countOccurrences(cRoot->left, elem, counting);
+  counting = countOccurrences(cRoot->right, elem, counting);
+
+  return counting;
+}
+
+
+/**
+ * Constructor to create an empty tree.
+ */
+template <typename T>
+BinaryTree<T>::BinaryTree() : root(NULL) {
+  /* nothing */
+}
+
+/**
+ * Inserts into the BinaryTree, taking a pseudo-random path to a leaf where
+ * it is inserted.
+ * @param elem The element to insert
+ */
+template <typename T>
+void BinaryTree<T>::insert(const T& elem) {
+  insert(root, elem);
+}
+
+template <typename T>
+void BinaryTree<T>::insert(Node*& node, const T& elem)
+{
+    // If we're at a NULL pointer, we can put our element here
+    if (node == NULL)
+        node = new Node(elem);
+
+    // Go left or right based on pseudorandom even/odd
+    else if (rand() % 2 == 0)
+        insert(node->left, elem);
+    else
+        insert(node->right, elem);
+}
+
+--- submitted file: binarytree.h ---
+#ifndef _BINARYTREE_H
+#define _BINARYTREE_H
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+template <typename T>
+class BinaryTree {
+  private:
+    struct Node {
+        T elem;
+        Node* left;
+        Node* right;
+        Node(const T& element) : elem(element), left(NULL), right(NULL) { }
+    };
+
+    Node* root;
+    void insert(Node*& node, const T& elem);
+    int countOccurrences(Node * cRoot, const T& elem, int counting);
+
+  public:
+    BinaryTree();
+    int countOccurrences(const T& elem);
+    void insert(const T& elem);
+};
+
+#ifndef _BINARYTREE_CPP
+#include "binarytree.cpp"
+#endif
+
+#endif
+
+
+=== Grade Feedback for Problem "programming_stlstack_gameNight_leaders" ===
+[30/30]: Test: Given Test Case (by ref)
+[70/70]: Test: Given Test Case (by value)
+=====
+[100/100]
+
+--- stdout ---
+g++ main.cpp person.cpp gamenight.cpp -std=c++1y -g -O0 -Wall -Wextra -pedantic -o gamenight-test
+===============================================================================
+All tests passed (5 assertions in 1 test case)
+
+===============================================================================
+All tests passed (5 assertions in 1 test case)
+
+===============================================================================
+All tests passed (10 assertions in 2 test cases)
+
+
+
+--- stderr ---
+
+
+--- submitted file: gamenight.cpp ---
+#include <iostream>
+#include <cstdlib>
+#include <queue>
+#include <stack>
+
+#include "gamenight.h"
+#include "person.h"
+
+using namespace std;
+
+void GameNight::arrival(Person *p) {
+  myStack.push(p);
+}
+
+Person * GameNight::getLeader() {
+  while (!myStack.empty() && !(myStack.top()->isLeader())) {
+    waitingStack.push(myStack.top());
+    myStack.pop();
+  }
+
+  Person * temp;
+
+  if (myStack.empty()) {
+    temp = NULL;
+  } else {
+    temp = myStack.top();
+    myStack.pop();
+  }
+
+  while (!(waitingStack.empty())) {
+    myStack.push(waitingStack.top());
+    waitingStack.pop();
+  }
+
+  return temp;
+}
+
+Person * GameNight::getNonLeader() {
+  while (!myStack.empty() && (myStack.top()->isLeader())) {
+    waitingStack.push(myStack.top());
+    myStack.pop();
+  }
+
+  Person * temp;
+
+  if (myStack.empty()) {
+    temp = NULL;
+  } else {
+    temp = myStack.top();
+    myStack.pop();
+  }
+
+  while (!(waitingStack.empty())) {
+    myStack.push(waitingStack.top());
+    waitingStack.pop();
+  }
+
+  return temp;
+}
+
+--- submitted file: gamenight.h ---
+#ifndef _GAMENIGHT_H
+#define _GAMENIGHT_H
+
+#include <iostream>
+#include <cstdlib>
+#include <queue>
+#include <stack>
+
+#include "person.h"
+
+using namespace std;
+
+class GameNight {
+  private:
+    stack<Person *> myStack;
+    stack<Person *> waitingStack;
+
+  public:
+    void arrival(Person *p);
+    Person *getLeader();
+    Person *getNonLeader();
+};
+
+#endif
+
+

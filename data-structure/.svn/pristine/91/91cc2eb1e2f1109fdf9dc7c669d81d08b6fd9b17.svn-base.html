@@ -1,0 +1,479 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<style>
+tr.total {
+  border-top: solid 2px black;
+  font-weight: bold;
+}
+tr.total td:first-child {
+  text-align: right;
+}
+li.L0, li.L1, li.L2, li.L3, li.L5, li.L6, li.L7, li.L8 {
+  list-style-type: decimal !important;
+}
+pre {
+  font-size: 0.75rem;
+}
+h5 {
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h3>zhiyuan5's feedback report for exam7_3</h3>
+<hr>
+<h4>Summary and Overall Grade</h4>
+<table class="table table-sm" style="width: auto;">
+  <thead>
+    <tr>
+      <th>Problem Name</th>
+      <th colspan="4">Score</th>
+    </tr>
+  </head>
+  <tbody>
+    <tr>
+      <td>Adopting an Animal</td>
+      <td style="text-align: right;">100</td>
+      <td>/</td>
+      <td style="text-align: right;">100</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Game Night Leaders</td>
+      <td style="text-align: right;">100</td>
+      <td>/</td>
+      <td style="text-align: right;">100</td>
+      <td></td>
+    </tr>
+    <tr class="total">
+      <td>Total:</td>
+      <td style="text-align: right;">200</td>
+      <td>/</td>
+      <td style="text-align: right;">200</td>
+      <td>100.00%</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+
+  <h4>&quot;Adopting an Animal&quot; Feedback</h4>
+
+  <h5>Question Text</h5>
+  <div style="border: solid 1px black; padding: 10px;">
+    <h4 id="thesetup">The Setup</h4>
+<p>Consider an animal shelter that contains two types of animals: dogs and cats.
+A dog is represented by the <code>Dog</code> class, a cat is represented by a <code>Cat</code> class,
+and both classes inherit the <code>Animal</code> class.</p>
+<p>The animal shelter maintains a singly list of all the animals (nodes
+with an <code>Animal *</code> pointer that points to the <code>Animal</code>).  When you want to adopt
+an animal from this shelter, you let them know your preference for a dog,
+cat, or either.</p>
+<p>Based on your preference, you adopt the animal closest to the head of the
+list that matches your preference.</p>
+<h4 id="theproblem">The Problem</h4>
+<p>In the <code>List</code> class, complete the <code>adoptCat</code>, <code>adoptDog</code>, and <code>adoptAny</code> member function in <code>list.cpp</code>.
+Each of these functions must:</p>
+<ol>
+<li>find the animal closest to the head of the list that meets the function preferences (if a suitable animal exists),</li>
+<li>remove that node from the list, and</li>
+<li>return a pointer to the <code>Animal</code> (if a suitable animal was found) <strong>or</strong> <code>NULL</code> if no animal was found</li>
+</ol>
+<h4 id="reference">Reference</h4>
+<p>The <code>List</code> class (<code>list.cpp</code>, <code>list.h</code>) stores a singly linked list of <code>ListNode</code>
+nodes, using the same structure and variable names as MP3.</p>
+<p>The <code>Animal</code> class has a member function <code>getType()</code> that will return <code>"Dog"</code> or <code>"Cat"</code> based
+on the type of animal.</p>
+<h4 id="compileandtest">Compile and Test</h4>
+<p>A complete Makefile and tester code is provided for you.  To compile and test,
+run:</p>
+<pre><code>make
+./animal-test
+</code></pre>
+  </div>
+
+  <h5>File Submissions</h5>
+    <div>
+      list.cpp
+    </div>
+    <div>
+      <pre class="prettyprint linenums">/* [zhiyuan5] submission on PL at 2017-04-25T12:07:42-05*/
+#define _LIST_CPP
+#include &quot;list.h&quot;
+#include &quot;animal.h&quot;
+#include &lt;cstddef&gt;
+
+//
+//  In the &#x60;List&#x60; class, complete the &#x60;adoptCat&#x60;, &#x60;adoptDog&#x60;, and &#x60;adoptAny&#x60;
+// member function in &#x60;list.cpp&#x60;.  Each of these functions must:
+//
+// 1. find the animal closest to the head of the list that meets the function
+//    preferences (if a suitable animal exists),
+// 2. remove that node from the list, and
+// 3. return a pointer to the &#x60;Animal&#x60; (if a suitable animal was found) **or**
+//    &#x60;NULL&#x60; if no animal was found
+//
+
+template &lt;class T&gt;
+const Animal *List&lt;T&gt;::adoptCat() {
+  if (head &#x3D;&#x3D; NULL) {
+    return NULL;
+  }
+
+  if (head-&gt;data-&gt;getType() &#x3D;&#x3D; &quot;Cat&quot;) {
+    ListNode * take &#x3D; head;
+    head &#x3D; head-&gt;next;
+    take-&gt;next &#x3D; NULL;
+    return take-&gt;data;
+  }
+
+  ListNode * find &#x3D; head;
+  while (find-&gt;next !&#x3D; NULL) {
+    if (find-&gt;next-&gt;data-&gt;getType() &#x3D;&#x3D; &quot;Cat&quot;) {
+      ListNode * take &#x3D; find-&gt;next;
+      find-&gt;next &#x3D; take-&gt;next;
+      take-&gt;next &#x3D; NULL;
+      return take-&gt;data;
+    }
+    find &#x3D; find-&gt;next;
+  }
+
+  return NULL;
+}
+
+template &lt;class T&gt;
+const Animal *List&lt;T&gt;::adoptDog() {
+  if (head &#x3D;&#x3D; NULL) {
+    return NULL;
+  }
+
+  if (head-&gt;data-&gt;getType() &#x3D;&#x3D; &quot;Dog&quot;) {
+    ListNode * take &#x3D; head;
+    head &#x3D; head-&gt;next;
+    take-&gt;next &#x3D; NULL;
+    return take-&gt;data;
+  }
+
+  ListNode * find &#x3D; head;
+  while (find-&gt;next !&#x3D; NULL) {
+    if (find-&gt;next-&gt;data-&gt;getType() &#x3D;&#x3D; &quot;Dog&quot;) {
+      ListNode * take &#x3D; find-&gt;next;
+      find-&gt;next &#x3D; take-&gt;next;
+      take-&gt;next &#x3D; NULL;
+      return take-&gt;data;
+    }
+    find &#x3D; find-&gt;next;
+  }
+
+  return NULL;
+}
+
+template &lt;class T&gt;
+const Animal *List&lt;T&gt;::adoptAny() {
+  if (head &#x3D;&#x3D; NULL) {
+    return NULL;
+  }
+
+  ListNode * take &#x3D; head;
+  head &#x3D; head-&gt;next;
+  take-&gt;next &#x3D; NULL;
+
+  return take-&gt;data;
+}
+
+
+
+template &lt;class T&gt;
+List&lt;T&gt;::List() {
+  this-&gt;head &#x3D; NULL;
+}
+
+template &lt;class T&gt;
+void List&lt;T&gt;::insertFront(const T&amp; ndata) {
+  ListNode* node &#x3D; new ListNode(ndata);
+  node-&gt;next &#x3D; head;
+  this-&gt;head &#x3D; node;
+}
+</pre>
+    </div>
+
+  <h5>Results of Tests</h5>
+  <table class="table table-sm" style="width: auto;">
+    <thead>
+      <tr>
+        <th>Problem Name</th>
+        <th colspan="3">Score</th>
+      </tr>
+    </head>
+    <tbody>
+      <tr>
+        <td>Empty list returns NULL</td>
+        <td style="text-align: right;">6</td>
+        <td>/</td>
+        <td style="text-align: right;">6</td>
+      </tr>
+      <tr>
+        <td>List of 1 dog returns NULL when requesting a cat</td>
+        <td style="text-align: right;">4</td>
+        <td>/</td>
+        <td style="text-align: right;">4</td>
+      </tr>
+      <tr>
+        <td>List of multiple dogs returns NULL when requesting a cat</td>
+        <td style="text-align: right;">4</td>
+        <td>/</td>
+        <td style="text-align: right;">4</td>
+      </tr>
+      <tr>
+        <td>List of 1 cat returns NULL when requesting a dog</td>
+        <td style="text-align: right;">4</td>
+        <td>/</td>
+        <td style="text-align: right;">4</td>
+      </tr>
+      <tr>
+        <td>List of multiple cats returns NULL when requesting a dog</td>
+        <td style="text-align: right;">4</td>
+        <td>/</td>
+        <td style="text-align: right;">4</td>
+      </tr>
+      <tr>
+        <td>Removing the only element in the list (reference check)</td>
+        <td style="text-align: right;">4</td>
+        <td>/</td>
+        <td style="text-align: right;">4</td>
+      </tr>
+      <tr>
+        <td>Removing from a one-element list (value check)</td>
+        <td style="text-align: right;">4</td>
+        <td>/</td>
+        <td style="text-align: right;">4</td>
+      </tr>
+      <tr>
+        <td>Full exam-provided example (reference)</td>
+        <td style="text-align: right;">20</td>
+        <td>/</td>
+        <td style="text-align: right;">20</td>
+      </tr>
+      <tr>
+        <td>Full exam-provided example (value)</td>
+        <td style="text-align: right;">50</td>
+        <td>/</td>
+        <td style="text-align: right;">50</td>
+      </tr>
+      <tr class="total">
+        <td>Total:</td>
+        <td style="text-align: right;">100</td>
+        <td>/</td>
+        <td style="text-align: right;">100</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h5>Raw Output</h5>
+  <div>
+    <div>stdout</div>
+    <pre style="border: solid 1px black";>node list_h_inject.js
+g++ animal.cpp cat.cpp dog.cpp animal-test.cpp list.cpp -std&#x3D;c++1y -lpng -lpthread -g -o animal-test
+Passed 1 test case with 1 assertion.
+
+Passed 1 test case with 1 assertion.
+
+Passed 1 test case with 1 assertion.
+
+Passed 1 test case with 1 assertion.
+
+Passed 1 test case with 1 assertion.
+
+Passed 1 test case with 2 assertions.
+
+Passed 1 test case with 2 assertions.
+
+Passed 1 test case with 5 assertions.
+
+Passed 1 test case with 5 assertions.
+
+Passed all 9 test cases with 19 assertions.
+
+</pre>
+  </div>
+  <div>
+    <div>stderr</div>
+    <pre style="border: solid 1px black";></pre>
+  </div>
+  <hr>
+  <h4>&quot;Game Night Leaders&quot; Feedback</h4>
+
+  <h5>Question Text</h5>
+  <div style="border: solid 1px black; padding: 10px;">
+    <h4 id="thesetup">The Setup</h4>
+<p>Consider a game night for students, where each student is added to a end of a
+linked list in the order they arrive to the game night.  To help organize the
+games, every 4th student is a leader.  For example:</p>
+<pre><code>1st     -&gt;  2nd  -&gt;  3rd   -&gt;  4th  -&gt; 5th     -&gt; 6th    -&gt;  ...
+Alice   -&gt;  Bob  -&gt;  Carol -&gt;  Don  -&gt; Erin    -&gt; Faythe -&gt;  ...
+[Leader]                               [Leader]
+</code></pre>
+<h4 id="theproblem">The Problem</h4>
+<p>In the <code>List</code> class, complete the <code>reorganizeList</code> member function in <code>list-p2.cpp</code>.
+The <code>reorganizeList</code> function must place all non-leaders at the front of the list
+followed by all leaders, while otherwise maintaining the same order.</p>
+<p>Using the example above, the new list must be the following:</p>
+<pre><code>2nd  -&gt;  3rd   -&gt;  4th  -&gt; 6th    -&gt; 1st     -&gt; 5th     -&gt;  ...
+Bob  -&gt;  Carol -&gt;  Don  -&gt; Faythe -&gt; Alice   -&gt; Erin    -&gt;  ...
+                                     [Leader]   [Leader]
+</code></pre>
+<h4 id="reference">Reference</h4>
+<p>The <code>List</code> class (<code>list-p2.cpp</code>, <code>list.h</code>) stores a singly linked list of <code>ListNode</code>
+nodes, using the same structure and variable names as MP3.</p>
+<p>The <code>ListNode</code> class contains a <code>bool leader</code> that will be set to <code>true</code> when
+that entry contains a leader.</p>
+<h4 id="compileandtest">Compile and Test</h4>
+<p>A complete Makefile and tester code is provided for you.  To compile and test,
+run:</p>
+<pre><code>make
+./gameNight-test
+</code></pre>
+  </div>
+
+  <h5>File Submissions</h5>
+    <div>
+      list-p2.cpp
+    </div>
+    <div>
+      <pre class="prettyprint linenums">/* [zhiyuan5] submission on PL at 2017-04-25T12:17:28-05*/
+#define _LIST_CPP
+#include &quot;list.h&quot;
+#include &quot;person.h&quot;
+
+#include &lt;cstddef&gt;
+
+
+//
+// In the &#x60;List&#x60; class, complete the &#x60;reorganizeList&#x60; member function in
+// &#x60;list.cpp&#x60;.  The &#x60;reorganizeList&#x60; function must place all non-leaders at the
+// front of the list followed by all leaders, while otherwise maintain the
+// same order.
+//
+
+template &lt;class T&gt;
+void List&lt;T&gt;::reorganizeList() {
+  if (head &#x3D;&#x3D; NULL) {
+    return;
+  }
+
+  ListNode * temp &#x3D; head-&gt;next;
+  while (temp !&#x3D; NULL) {
+    if (!temp-&gt;leader) {
+      ListNode * prev &#x3D; head;
+      while (prev-&gt;next !&#x3D; temp) {
+        prev &#x3D; prev-&gt;next;
+      }
+      prev-&gt;next &#x3D; temp-&gt;next;
+      temp-&gt;next &#x3D; NULL;
+
+      if (head-&gt;leader) {
+        temp-&gt;next &#x3D; head;
+        head &#x3D; temp;
+        temp &#x3D; prev-&gt;next;
+      } else {
+        ListNode * find &#x3D; head;
+        while (!find-&gt;next-&gt;leader) {
+          find &#x3D; find-&gt;next;
+        }
+        temp-&gt;next &#x3D; find-&gt;next;
+        find-&gt;next &#x3D; temp;
+        temp &#x3D; prev-&gt;next;
+      }
+    } else {
+      temp &#x3D; temp-&gt;next;
+    }
+  }
+}
+
+
+template &lt;class T&gt;
+List&lt;T&gt;::List() {
+  this-&gt;head &#x3D; NULL;
+}
+
+template &lt;class T&gt;
+void List&lt;T&gt;::insertBack(const T&amp; ndata) {
+  static int ct &#x3D; 0;
+
+  ListNode* node &#x3D; new ListNode(ndata);
+  node-&gt;leader &#x3D; (ct++ % 4 &#x3D;&#x3D; 0);
+
+  if (!head) {
+    head &#x3D; node;
+  } else {
+    ListNode *thru &#x3D; head;
+    while (thru-&gt;next !&#x3D; NULL) { thru &#x3D; thru-&gt;next; }
+    thru-&gt;next &#x3D; node;
+  }
+}
+
+template &lt;class T&gt;
+const T *List&lt;T&gt;::get(int index) const {
+  ListNode *thru &#x3D; head;
+  while (thru &amp;&amp; index-- &gt; 0) { thru &#x3D; thru-&gt;next; }
+
+  if (thru) { return &amp;(thru-&gt;data); }
+  else      { return NULL; }
+}
+</pre>
+    </div>
+
+  <h5>Results of Tests</h5>
+  <table class="table table-sm" style="width: auto;">
+    <thead>
+      <tr>
+        <th>Problem Name</th>
+        <th colspan="3">Score</th>
+      </tr>
+    </head>
+    <tbody>
+      <tr>
+        <td>List of six people (by ref)</td>
+        <td style="text-align: right;">30</td>
+        <td>/</td>
+        <td style="text-align: right;">30</td>
+      </tr>
+      <tr>
+        <td>List of six people (by value)</td>
+        <td style="text-align: right;">70</td>
+        <td>/</td>
+        <td style="text-align: right;">70</td>
+      </tr>
+      <tr class="total">
+        <td>Total:</td>
+        <td style="text-align: right;">100</td>
+        <td>/</td>
+        <td style="text-align: right;">100</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h5>Raw Output</h5>
+  <div>
+    <div>stdout</div>
+    <pre style="border: solid 1px black";>node list_h_inject.js
+g++ gameNight-test.cpp list-p2.cpp person.cpp -std&#x3D;c++1y -lpng -lpthread -g -o gameNight-test
+Passed 1 test case with 6 assertions.
+
+Passed 1 test case with 6 assertions.
+
+</pre>
+  </div>
+  <div>
+    <div>stderr</div>
+    <pre style="border: solid 1px black";></pre>
+  </div>
+  <hr>
+</div>
+</body>
+</html>
+ 

@@ -1,0 +1,236 @@
+Exam #2 score (zhiyuan5): 100/200
+
+=== Grade Feedback for Problem "programming_bigThree_createCtor_garden" ===
+[0/100]: Test: initialize garden (ctor)
+     Message: SIGSEGV
+=====
+[0/100]
+
+--- stdout ---
+g++ flower.cpp -std=c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ garden.cpp -std=c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ garden-test.cpp -std=c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ flower.o garden.o garden-test.o -std=c++1y -lpng -lpthread -o catch-tester
+Match @0
+Match @1
+Match @2
+Match @3
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+catch-tester is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+initialize garden (ctor)
+-------------------------------------------------------------------------------
+garden-test.cpp:59
+...............................................................................
+
+garden-test.cpp:59: FAILED:
+due to a fatal error condition:
+  SIGSEGV - Segmentation violation signal
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 1 | 1 failed
+
+Match @0
+Match @1
+Match @2
+Match @3
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+catch-tester is a Catch v1.8.1 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+initialize garden (ctor)
+-------------------------------------------------------------------------------
+garden-test.cpp:59
+...............................................................................
+
+garden-test.cpp:59: FAILED:
+due to a fatal error condition:
+  SIGSEGV - Segmentation violation signal
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 1 | 1 failed
+
+
+
+--- stderr ---
+
+
+--- submitted file: garden.cpp ---
+#include "flower.h"
+#include "garden.h"
+
+garden::garden(flower * arr) {
+  grid = new flower * (arr);
+  for (int i = 0; i < 4; i++) {
+    arr = new flower[4];
+  }
+}
+
+flower garden::getFlower(int row, int column) const {
+  return this->grid[row][column];
+}
+
+void garden::setFlower(int row, int column, const flower &f) {
+  this->grid[row][column] = f;
+}
+
+--- submitted file: garden.h ---
+#ifndef _GARDEN_H
+#define _GARDEN_H
+
+#include "flower.h"
+
+class garden {
+public:
+  garden(flower * arr);
+  flower getFlower(int row, int column) const;
+  void setFlower(int row, int column, const flower &f);
+
+private:
+  flower **grid;
+};
+
+#endif
+
+
+=== Grade Feedback for Problem "programming_operator_plus_backpack" ===
+[25/25]: Test: backpack member functions after adding backpacks
+[25/25]: Test: add an empty backpack to a backpack
+[25/25]: Test: add backpack to an empty backpack
+[25/25]: Test: add two full backpacks together
+=====
+[100/100]
+
+--- stdout ---
+g++ backpack.cpp -std=c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ backpack-test.cpp -std=c++1y -c -g -O0 -Wall -Wextra -pedantic
+g++ backpack.o backpack-test.o -std=c++1y -lpng -lpthread -o catch-tester
+===============================================================================
+All tests passed (3 assertions in 1 test case)
+
+===============================================================================
+All tests passed (3 assertions in 1 test case)
+
+===============================================================================
+All tests passed (3 assertions in 1 test case)
+
+===============================================================================
+All tests passed (3 assertions in 1 test case)
+
+===============================================================================
+All tests passed (12 assertions in 4 test cases)
+
+
+
+--- stderr ---
+backpack.cpp: In member function ‘backpack& backpack::operator+(const backpack&)’:
+backpack.cpp:40:1: warning: no return statement in function returning non-void [-Wreturn-type]
+ }
+ ^
+
+
+--- submitted file: backpack.cpp ---
+#include "backpack.h"
+
+//
+// In the `backpack` class, overload the `+` (plus) operator to add two
+// `backpack` classes.
+//
+// The result must be a `backpack` where:
+// - the result `size` is the sum of the `size` of each individual backpack, and
+// - the items (`items` and `item_weights`) in the result are the items from
+//  both backpacks
+//
+
+backpack::backpack(int size) : size(size), items(0) {
+  this->item_weights = new int[size];
+}
+
+backpack & backpack::operator+(const backpack & rhs) {
+    int count = 0;
+    int itemsTemp = items;
+   size = size + rhs.size;
+   items = items + rhs.items;
+   if (items > size) {
+     items = size;
+   }
+   int * temp = new int[items];
+
+   for (int i = 0; i < rhs.items; i++) {
+     temp[i] = rhs.item_weights[i];
+     count++;
+   }
+
+   for (int i = 0; i < itemsTemp; i++) {
+     temp[count] = item_weights[i];
+     count++;
+   }
+
+   delete [] item_weights;
+   delete [] rhs.item_weights;
+   item_weights = temp;
+}
+
+bool backpack::addItem(int weight) {
+  if (items == size) {
+    // Cannot add if the backpack is full of items
+    return false;
+  } else {
+    // Otherwise, add the item
+    this->item_weights[this->items] = weight;
+    this->items++;
+    return true;
+  }
+}
+
+int backpack::getSize() const {
+  return this->size;
+}
+
+int backpack::getItemCount() const {
+  return this->items;
+}
+
+const int *backpack::getItems() const {
+  return this->item_weights;
+}
+
+--- submitted file: backpack.h ---
+#ifndef _BACKPACK_H
+#define _BACKPACK_H
+
+//
+// In the `backpack` class, overload the `+` (plus) operator to add two
+// `backpack` classes.
+//
+// The result must be a `backpack` where:
+// - the result `size` is the sum of the `size` of each individual backpack, and
+// - the items (`items` and `item_weights`) in the result are the items from
+//  both backpacks
+//
+
+class backpack {
+public:
+  backpack(int size);
+  backpack & operator+(const backpack & rhs);
+  int getSize() const;
+  int getItemCount() const;
+  const int *getItems() const;
+  bool addItem(int weight);
+
+private:
+  int size;
+  int items;
+  int *item_weights;
+};
+
+#endif
+
+

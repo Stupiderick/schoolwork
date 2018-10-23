@@ -1,0 +1,131 @@
+Exam #6 score (zhiyuan5): 100/100
+
+=== Grade Feedback for Problem "programming_mtreeToBinaryTree" ===
+[20/20]: Test: Simple Tree Test (height=1, m=2)
+[20/20]: Test: Complex Tree Test (height=2, m=5)
+[60/60]: Test: Exam-provided Test
+=====
+[100/100]
+
+--- stdout ---
+g++ main.cpp tree.cpp -std=c++1y -g -O0 -Wall -Wextra -pedantic -o main
+===============================================================================
+All tests passed (6 assertions in 1 test case)
+
+===============================================================================
+All tests passed (14 assertions in 1 test case)
+
+===============================================================================
+All tests passed (15 assertions in 1 test case)
+
+===============================================================================
+All tests passed (35 assertions in 3 test cases)
+
+
+
+--- stderr ---
+
+
+--- submitted file: tree.cpp ---
+#define _TREE_CPP
+#include <iostream>
+#include <vector>
+#include "tree.h"
+
+
+template <class T>
+void Tree<T>::transformToBinary() {
+  if (root == NULL) {
+    return;
+  }
+  
+  transformToBinaryHelper(root);
+}
+
+template <class T>
+void Tree<T>::transformToBinaryHelper(TreeNode* croot) {
+  if (croot->children.empty()) {
+    return;
+  }
+
+  for (unsigned i = 0; i < croot->children.size(); i++) {
+    if (croot->children.at(i) == NULL) {
+      continue;
+    }
+    transformToBinaryHelper(croot->children.at(i));
+  }
+
+  croot->left = croot->children.at(0);
+  TreeNode* temp = croot->left;
+
+  for (unsigned i = 1; i < croot->children.size(); i++) {
+    if (croot->children.at(i) == NULL) {
+      continue;
+    }
+    temp->right = croot->children.at(i);
+    temp = temp->right;
+  }
+
+  for (unsigned i = 0; i < croot->children.size(); i++) {
+    croot->children.at(i) = NULL;
+  }
+}
+
+
+template <class T>
+void Tree<T>::insert(T &val, vector<int> location) {
+  TreeNode *node = new TreeNode(val);
+
+  if (root == NULL) {
+    // add root:
+    root = node;
+  } else {
+     // Otherwise, find the node specified by the location vector:
+    TreeNode *loc = root;
+    for (int i = 0; i < location.size(); i++) {
+      loc = loc->children[ location[i] ];
+    }
+    loc->children.push_back(node);
+  }
+}
+
+--- submitted file: tree.h ---
+#ifndef _TREE_H
+#define _TREE_H
+
+#include <vector>
+using namespace std;
+
+template <class T>
+class Tree {
+public:
+  class TreeNode {
+  public:
+    TreeNode(T &val) : val(val), left(NULL), right(NULL) { };
+    T &val;
+
+    /* n-tree children: */
+    vector<TreeNode *> children;
+
+    /* binary tree children: */
+    TreeNode *left;
+    TreeNode *right;
+  };
+
+  Tree() : root(NULL) {};
+  TreeNode *root;
+
+  void insert(T &val, vector<int> location);
+  void transformToBinary();
+  void transformToBinaryHelper(TreeNode* croot);
+
+  void transformToBinaryR( TreeNode *node, vector<TreeNode *>siblingList, int nextSiblingIndex );
+};
+
+#ifndef _TREE_CPP
+#include "tree.cpp"
+#endif
+
+#endif
+
+

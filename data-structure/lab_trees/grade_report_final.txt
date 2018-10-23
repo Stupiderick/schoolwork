@@ -1,0 +1,69 @@
+Grading r26459 by zhiyuan5 committed on Fri Mar  3 18:27:03 CST 2017
+Monad Autograder
+Testing lab_trees at 2017-03-06 00:26:16
+
+"Hulp -> Wat is dit?" ~ LibreOffice Impress
+
+Setting up test environment...
+Compiling...
+================================================================
+
+
+Running tests...
+================================================================
+test_isOrdered  . [33 pts] - FAILED: unit_tests.cpp:80: Assertion (tree3.isOrdered() == false) failed
+test_mirror . . . [33 pts] - passed
+test_printPaths . [34 pts] - passed
+test_sumDistances [25 pts] - passed
+
+
+Total score...
+================================================================
+TOTAL SCORE: 92
+
+
+
+Detailed test output...
+================================================================
+----------------------------------------------------------------
+test_isOrdered [33 points]
+Result: FAILED: unit_tests.cpp:80: Assertion (tree3.isOrdered() == false) failed
+Took 0ms (1000ms timeout)
+Output:
+----------------------------------------------------------------
+                        ______ 6 ______                          
+                 ______/               \______                   
+            __ 0 __                         __ 3                 
+         __/       \__                   __/                     
+       7               8               5                         
+                         \               \                       
+                           1               4                     
+                                          / \                    
+                                         9   2                   
+                                                ______________ 1 ______________                                                  
+                                 ______________/                               \______________                                   
+                               0                                                        ______ 7 ______                          
+                                                                                 ______/               \______                   
+                                                                            __ 6                               8 __              
+                                                                         __/                                       \__           
+                                                                       3                                               9         
+                                                                     /   \                                                       
+                                                                   2       5                                                     
+                                                                          /                                                      
+                                                                         4                                                       
+                        ______ 10 _____                          
+                 ______/               \______                   
+            __ 3 __                         __ 15 _              
+         __/       \__                   __/       \__           
+       2               7               7               20        
+     /   \           /   \           /   \           /   \       
+   0       11      6       8       6       18      14      23    
+  / \             / \       \                                    
+ -1  1           4   9       9                                   
+
+
+----------------------------------------------------------------
+Total score...
+================================================================
+TOTAL SCORE: 92
+

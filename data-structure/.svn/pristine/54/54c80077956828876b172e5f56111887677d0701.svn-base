@@ -1,0 +1,103 @@
+Exam #1 score (zhiyuan5): 6/6
+
+=== Grade Feedback for Problem "exam1_createSmallClass_cube" ===
+[1/1]: Test: default constructor
+[1/1]: Test: one parameter constructor
+[1/1]: Test: use of type double
+=====
+[3/3]
+
+--- stdout ---
+g++ -g -O0 -Wall -Wextra main.cpp cube.cpp -o cube-tester
+Testing default constructor...
++ PASS : (new cube())->getVolume == 1
+
+Testing one parameter constructor...
++ PASS : (new cube(2))->getVolume == 8
+
+Testing use of type double...
++ PASS : (new cube(2.5))->getVolume == 2.5 * 2.5 * 2.5
+
+
+
+--- stderr ---
+
+
+--- submitted file: cube.cpp ---
+#include "cube.h"
+
+cube::cube() {
+  d = 1.0;
+}
+
+cube::cube(double length) {
+  d = length;
+}
+
+double cube::getVolume() {
+  return d * d * d;
+}
+
+--- submitted file: cube.h ---
+#ifndef _CUBE_H
+#define _CUBE_H
+
+
+class cube {
+public:
+  cube();
+  cube(double length);
+  double getVolume();
+
+private:
+  double d;
+};
+
+#endif
+
+
+=== Grade Feedback for Problem "exam1_mp1-like_illiniBlue" ===
+[1/1]: Test: in_1.png
+[1/1]: Test: in_2.png
+[1/1]: Test: in_3.png
+=====
+[3/3]
+
+--- stdout ---
+g++ -std=c++1y -c -g -O0 -Wall -Wextra -pedantic main.cpp
+g++ -std=c++1y -c -g -O0 -Wall -Wextra -pedantic png.cpp
+g++ -std=c++1y -c -g -O0 -Wall -Wextra -pedantic rgbapixel.cpp
+g++ main.o png.o rgbapixel.o -std=c++1y -lpng -lpthread -o main
+
+
+--- stderr ---
+
+
+--- submitted file: main.cpp ---
+#include <algorithm>
+#include <iostream>
+
+#include "rgbapixel.h"
+#include "png.h"
+
+using namespace std;
+
+PNG transform_illini_blue(PNG original) {
+	for(size_t xi = 0; xi < original.width(); xi++) {
+		for(size_t yi = 0; yi < original.height(); yi++) {
+			original(xi, yi)->red = 0;
+			original(xi, yi)->green = 0;
+		}
+	}
+
+	return original;
+}
+
+int main() {
+	PNG image("in.png");
+	image = transform_illini_blue(image);
+	image.writeToFile("out.png");
+	return 0;
+}
+
+
