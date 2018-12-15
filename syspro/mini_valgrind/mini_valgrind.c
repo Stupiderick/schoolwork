@@ -30,11 +30,15 @@ void *mini_malloc(size_t request_size, const char *filename,
     ret->request_size = request_size;
     ret->filename = filename;
     ret->instruction = instruction;
-    ret->next = NULL;
+    ret->next = head;
+    head = ret;
 
     // set up extern head...
+    
+
+
     // if there is no meta_data struct, let head point to ret...
-    if (head == NULL) {
+   /* if (head == NULL) {
          head = ret;
     // or traverse to the end of the list...
     } else {
@@ -44,7 +48,7 @@ void *mini_malloc(size_t request_size, const char *filename,
         }
         temp->next = ret;
         temp = NULL;
-    }
+    }*/
     
     // set up extern total_request_size...
     total_memory_requested += request_size;

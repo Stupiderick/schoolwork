@@ -13,6 +13,7 @@ int main() {
     int *b = malloc(500);
 //    b = realloc(b, 600);
     int *c = malloc(1000);
+    c = realloc(c, 10000);
 //    int c = 50;
 //    int *d = &c;
     free(b);
@@ -24,3 +25,4 @@ int main() {
 
     return 0;
 }
+
