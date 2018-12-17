@@ -101,22 +101,26 @@ int main() {
     * There is a MMU (memory management unit) in CPUs, and it takes care of the memory conversion. Memory is stored in blocks, and the unit can use multiple levels of page tables to store the virtual memory. There is also a TLB (translation lookaside buffer) to keep the just-found conversion for the sake of shorter running time.
 
 2.	Explain Knuth's and the Buddy allocation scheme. Discuss internal & external Fragmentation.
-    * Buddy allocator first use 64kb spaces, then if the requested memory is smaller than the allocated spaces, the algorithm will break down the allocated spaces for the request.
+    * Knuth's allocation scheme: boundary tags at the beginning and end of the block with block size and status.
+    * Buddy allocator: splits allocations into blocks of different levels. If the requested memory is smaller than the allocated spaces, the algorithm will break down the allocated spaces for the request.
+
+    * Internal fragmentation: when requested size is smaller than the actual size.
+    * External fragmentation: there is enough free memory to allocate a block, but they are divided into small pieces.
 
 3.	What is the difference between the MMU and TLB? What is the purpose of each?
     * MMU converts virtual memory addresses to physical memory addresses. It will also interrupt CPU if processes try to access read-only memory.
     * TLB is a cache. When there are requests to converting a virtual address to physical address, it will be queried to find if the conversion has been cached. If so, it will make the translation faster, because seeking times are reduced.
 
 4.	Assuming 4KB page tables what is the page number and offset for virtual address 0x12345678?
-    * 4KB is 2^12 bytes, so 12345 is the page number and offset is 678.
+    * 4KB is 2^12 bytes, so 0x12345 is the page number, and 0x678 is offset.
 
 5.	What is a page fault? When is it an error? When is it not an error?
-    * Page faults will raise when running programs are trying to access a virtual address that is not mapped to a physical address.
-    * Page faults are not an error when there is no mapping for the page, but it is a valid address.
+    * Page faults will raise when running programs are trying to access a virtual address that is not mapped to a physical address by MMU.
+    * Minor: Page faults are not an error when there is no mapping for the page, but it is a valid address.
 
 6.	What is Spatial and Temporal Locality? Swapping? Swap file? Demand Paging?
-    * temporal locality is when you access the same memory address multiple times within a relatively small time period
-    * spatial locality is accessing elements in close storage locations (addresses close to each other) (like traversing an array)
+    * temporal locality - when you access the same memory address multiple times within a relatively small time period
+    * spatial locality - accessing elements in close storage locations (addresses close to each other) (like traversing an array)
     * swapping – when a process is swapped out of main memory to a backing store (to the disk) and vice versa
     * swap file – a space on a hard disk used as the virtual memory extension of a computer's real memory (where the swapped out page goes to on disk)
     * demand paging – a type of swapping where pages are not copied from disk to memory until needed
@@ -131,16 +135,28 @@ int main() {
     * File descriptors
 
 2.	Explain the operating system actions required to perform a process context switch
-
+    * get into kernel mode;
+    * save the old program's registers and address of the next instruction;
+    * flush TLB + save heap memory;
+    * switch memory address space
+    * get back to user mode.
 
 3.	Explain the actions required to perform a thread context switch to a thread in the same process
-    * When you have more threads than CPU, each threads will be run in a short time by one CPU.
+    * save and swap registers and program counter.
+    * virtual memory space stays the same.
 
 4.	How can a process be orphaned? What does the process do about it?
+    * When the parents exit, the child process will become an orphan. init will adopt it.
 
 5.	How do you create a process zombie?
+    * If the child process finished before its parent finishes, it can become a zombie. Create a child process without wait for it.
 
 6.	Under what conditions will a multi-threaded process exit? (List at least 4)
+    * pthread_exit() on the last thread;
+    * pthread_join() on the last thread;
+    * return from main thread;
+    * one of the thread calls exit().
+    * SIGFAULT
 
 ## 4. Scheduling
 1.	Define arrival time, pre-emption, turnaround time, waiting time and response time in the context of scheduling algorithms. What is starvation?  Which scheduling policies have the possibility of resulting in starvation?
@@ -181,17 +197,17 @@ int main() {
 
 2.	What problem does the Banker's Algorithm solve?
     * break circular wait.
+    * Deadlock avoidance.
 
 3.	What is the difference between Deadlock Prevention, Deadlock Detection and Deadlock Avoidance?
 
 4.	Sketch how to use condition-variable based barrier to ensure your main game loop does not start until the audio and graphic threads have initialized the hardware and are ready.
 ```c
 pthread_mutex_lock(&m);
-if (initialized_machine) {
-    pthread_cond_broadcast(&cv);
-} else {
+while (!initialized_machine) {
     pthread_cond_wait(&cv, &m);
 }
+pthread_cond_broadcast(&cv);    
 pthread_mutex_unlock(&m);
 ```
 
@@ -204,8 +220,26 @@ pthread_mutex_unlock(&m);
 ## 6. IPC and signals
 
 1.	Write brief code to redirect future standard output to a file.
+```c
+int fd = open(filename, O_CREAT | O_RDWR);
+dup2(fd, STDOUT_FILENO);
+```
 
 2.	Write a brief code example that uses dup2 and fork to redirect a child process output to a pipe
+```c
+int fd[2];
+pipe(fd);
+
+pid_t pid = fork();
+if (pid == 0) {
+    close(fd[0]);
+    dup2(fd[1], STDOUT_FILENO);
+    // exec...
+} else {
+    close(fd[1]);
+    waitpid(pid, NULL, 0);
+}
+```
 
 3.	Give an example of kernel generated signal. List 2 calls that can a process can use to generate a SIGUSR1.
 
@@ -312,6 +346,7 @@ return 0;
 ```
 
 4.	Explain the main differences between using `select` and `epoll`. What are edge- and level-triggered epoll modes?
+    * select is O(n); epoll is O(1).
     * Edge-triggered: you will only be notified when it's available to read and it was not read yet.
     * Level-triggered: you will be notified when there it's available to read.
 
@@ -434,9 +469,8 @@ int is_dir(char *path) {
 7.	Write brief code to recursive search user's home directory and sub-directories (use `getenv`) for a file named "xkcd-functional.png' If the file is found, print the full path to stdout.
 
 8.	The file 'installmeplz' can't be run (it's owned by root and is not executable). Explain how to use sudo, chown and chmod shell commands, to change the ownership to you and ensure that it is executable.
-    * `sudo ./installmeplz`
-    * `chown user_id installmeplz`
-    * `chmod 4000 installmeplz`
+    * `sudo chown username installmeplz`
+    * `chmod 700 installmeplz`
 
 ## 9. File system
 Assume 10 direct blocks, a pointer to an indirect block, double-indirect, and triple indirect block, and block size 4KB.
