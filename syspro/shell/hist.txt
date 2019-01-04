@@ -1,6 +1,0 @@
-echo hi
-fjklsjfdkl
-echo hey
-echo what
-1history
-1history
